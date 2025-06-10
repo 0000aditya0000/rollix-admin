@@ -1,0 +1,26 @@
+ [
+    {
+        "id": "12555",
+        "name": "Power Mania Bonus",
+        "img": "https://asia.cdns-stat.com/resources/sitepicstbs/xgames/game_img_2/powermaniabonus.jpg",
+        "device": "2",
+        "title": "zitro",
+        "categories": "slots",
+        "bm": "0",
+        "demo": "0",
+        "rewriterule": "0",
+        "exitButton": "1"
+    },
+    {
+        "id": "12554",
+        "name": "La Calaca Bingo",
+        "img": "https://asia.cdns-stat.com/resources/sitepicstbs/xgames/game_img_2/lacalaca.jpg",
+        "device": "2",
+        "title": "zitro",
+        "categories": "slots",
+        "bm": "0",
+        "demo": "0",
+        "rewriterule": "0",
+        "exitButton": "1"
+    }
+]

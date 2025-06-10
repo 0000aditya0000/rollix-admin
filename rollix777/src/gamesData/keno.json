@@ -1,0 +1,38 @@
+ [
+            {
+                "id": "4270",
+                "name": "Lucky Keno",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/slgames/game_img_2/LuckyKeno.jpg",
+                "device": "2",
+                "title": "keno",
+                "categories": "slots",
+                "bm": "0",
+                "demo": "1",
+                "rewriterule": "1",
+                "exitButton": "1"
+            },
+            {
+                "id": "3155",
+                "name": "Golf Keno",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/slgames/game_img_2/GolfKeno.jpg",
+                "device": "0",
+                "title": "keno",
+                "categories": "lottery",
+                "bm": "0",
+                "demo": "1",
+                "rewriterule": "1",
+                "exitButton": "1"
+            },
+            {
+                "id": "1649",
+                "name": "Keno",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/slgames/game_img_2/ekeno.jpg",
+                "device": "0",
+                "title": "keno",
+                "categories": "lottery",
+                "bm": "0",
+                "demo": "1",
+                "rewriterule": "1",
+                "exitButton": "1"
+            }
+        ]

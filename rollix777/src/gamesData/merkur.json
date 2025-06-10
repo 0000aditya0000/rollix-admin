@@ -1,0 +1,86 @@
+[
+    {
+        "id": "6819",
+        "name": "Xtra 10 Liner",
+        "img": "https://asia.cdns-stat.com/resources/sitepicstbs/mrk/game_img_2/Xtra10Liner.jpg",
+        "device": "2",
+        "title": "merkur",
+        "categories": "slots",
+        "bm": "1",
+        "demo": "0",
+        "rewriterule": "1",
+        "exitButton": "1"
+    },
+    {
+        "id": "6818",
+        "name": "Blasing Star",
+        "img": "https://asia.cdns-stat.com/resources/sitepicstbs/mrk/game_img_2/BlasingStar.jpg",
+        "device": "2",
+        "title": "merkur",
+        "categories": "slots",
+        "bm": "1",
+        "demo": "0",
+        "rewriterule": "1",
+        "exitButton": "1"
+    },
+    {
+        "id": "6812",
+        "name": "Cash Fruits Plus",
+        "img": "https://asia.cdns-stat.com/resources/sitepicstbs/mrk/game_img_2/CashFruitsPlus.jpg",
+        "device": "2",
+        "title": "merkur",
+        "categories": "slots",
+        "bm": "1",
+        "demo": "0",
+        "rewriterule": "1",
+        "exitButton": "1"
+    },
+    {
+        "id": "6808",
+        "name": "Gold of Persia",
+        "img": "https://asia.cdns-stat.com/resources/sitepicstbs/mrk/game_img_2/GoldofPersia.jpg",
+        "device": "2",
+        "title": "merkur",
+        "categories": "slots",
+        "bm": "1",
+        "demo": "0",
+        "rewriterule": "1",
+        "exitButton": "1"
+    },
+    {
+        "id": "6802",
+        "name": "Magic Mirror",
+        "img": "https://asia.cdns-stat.com/resources/sitepicstbs/mrk/game_img_2/MagicMirror.jpg",
+        "device": "2",
+        "title": "merkur",
+        "categories": "slots",
+        "bm": "1",
+        "demo": "0",
+        "rewriterule": "1",
+        "exitButton": "1"
+    },
+    {
+        "id": "6788",
+        "name": "Super 7 Reels",
+        "img": "https://asia.cdns-stat.com/resources/sitepicstbs/mrk/game_img_2/Super7Reels.jpg",
+        "device": "2",
+        "title": "merkur",
+        "categories": "slots",
+        "bm": "1",
+        "demo": "0",
+        "rewriterule": "1",
+        "exitButton": "1"
+    },
+    {
+        "id": "6787",
+        "name": "Extra Wild",
+        "img": "https://asia.cdns-stat.com/resources/sitepicstbs/mrk/game_img_2/ExtraWild.jpg",
+        "device": "2",
+        "title": "merkur",
+        "categories": "slots",
+        "bm": "0",
+        "demo": "0",
+        "rewriterule": "1",
+        "exitButton": "1"
+    }
+]
