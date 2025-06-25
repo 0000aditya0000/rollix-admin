@@ -114,6 +114,7 @@ const BankAccounts = () => {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'desc' });
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const [comment, setComment] = useState('');
 
   const fetchAccounts = async (page: number = 1) => {
     try {
@@ -144,7 +145,8 @@ const BankAccounts = () => {
     try {
       setUpdatingStatus(true);
       const response = await axios.put(`${baseUrl}/api/bankaccount/update-status/${accountId}`, {
-        status: newStatus
+        status: newStatus,
+        note: comment
       });
 
       if (response.data.success) {
@@ -154,6 +156,7 @@ const BankAccounts = () => {
         toast.success(actionMessage);
         setIsViewModalOpen(false);
         setSelectedAccount(null);
+        setComment('');
         // Refresh the list with current filters
         fetchAccounts(pagination.currentPage);
       } else {
@@ -250,6 +253,54 @@ const BankAccounts = () => {
             </div>
           </div>
         </div> */}
+
+        {/* Add Comments Section */}
+        <div className="space-y-3 pt-4 border-t border-purple-500/20">
+          <div className="space-y-1.5">
+            <label htmlFor="comment" className="text-gray-400 text-sm">Comments</label>
+            <textarea
+              id="comment"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Add your comments here..."
+              className="w-full h-24 px-3 py-2 bg-[#1A1A2E] border border-purple-500/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 resize-none"
+            />
+          </div>
+        </div>
+
+        {/* Action Buttons for Pending Status */}
+        {account.status === 0 && (
+          <div className="flex gap-3 pt-4 border-t border-purple-500/20">
+            <button
+              onClick={() => handleUpdateStatus(account.id, 1)}
+              disabled={updatingStatus}
+              className="flex-1 py-2.5 px-4 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              {updatingStatus ? (
+                <div className="flex items-center justify-center gap-2">
+                  <Loader2 className="animate-spin" size={16} />
+                  <span>Approving...</span>
+                </div>
+              ) : (
+                'Approve'
+              )}
+            </button>
+            <button
+              onClick={() => handleUpdateStatus(account.id, 2)}
+              disabled={updatingStatus}
+              className="flex-1 py-2.5 px-4 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              {updatingStatus ? (
+                <div className="flex items-center justify-center gap-2">
+                  <Loader2 className="animate-spin" size={16} />
+                  <span>Rejecting...</span>
+                </div>
+              ) : (
+                'Reject'
+              )}
+            </button>
+          </div>
+        )}
       </div>
     );
   };
@@ -665,7 +716,19 @@ const BankAccounts = () => {
                     </div>
                   )}
 
-               
+                  {/* Add Comments Section */}
+                  <div className="space-y-3 pt-4 border-t border-purple-500/20">
+                    <div className="space-y-1.5">
+                      <label htmlFor="comment" className="text-gray-400 text-sm">Comments</label>
+                      <textarea
+                        id="comment"
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        placeholder="Add your comments here..."
+                        className="w-full h-24 px-3 py-2 bg-[#1A1A2E] border border-purple-500/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 resize-none"
+                      />
+                    </div>
+                  </div>
 
                   {/* Action Buttons for Pending Status */}
                   {selectedAccount.status === 0 && (

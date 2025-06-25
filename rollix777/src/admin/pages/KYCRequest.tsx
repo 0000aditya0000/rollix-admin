@@ -95,6 +95,7 @@ const KYCRequest = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [selectedRequest, setSelectedRequest] = useState<KYCRequest | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [comment, setComment] = useState('');
 
   const fetchKYCRequests = async (page: number) => {
     try {
@@ -136,17 +137,15 @@ const KYCRequest = () => {
       const url = new URL(`${baseUrl}/api/user/kyc/approve/${userId}`);
       const response = await axios.put<KYCActionResponse>(url.toString(), {
         status: isApprove ? 1 : 2,
-        page: currentPage
+        page: currentPage,
+        note: comment
       });
       
       if (response.data.success) {
         toast.success(response.data.message);
-        // Refetch data for the current page
         await fetchKYCRequests(currentPage);
-        
-        if (selectedRequest?.user_id === userId) {
-          handleCloseModal();
-        }
+        handleCloseModal();
+        setComment('');
       } else {
         throw new Error(response.data.message || `Failed to ${isApprove ? 'approve' : 'reject'} KYC`);
       }
@@ -185,6 +184,7 @@ const KYCRequest = () => {
   const handleCloseModal = () => {
     setSelectedRequest(null);
     setShowModal(false);
+    setComment('');
   };
 
   const renderDocumentModal = () => {
@@ -278,14 +278,31 @@ const KYCRequest = () => {
               </div>
             </div>
 
+            {/* Add Comment Box */}
+            <div className="mt-6">
+              <label htmlFor="comment" className="block text-sm font-medium text-gray-300 mb-2">
+                Add Comment
+              </label>
+              <textarea
+                id="comment"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Enter your comment here..."
+                className="w-full h-24 px-4 py-3 bg-[#1A1A2E] border border-purple-500/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none"
+              />
+            </div>
+
             {selectedRequest.kyc_status.code === 0 && (
               <div className="flex gap-4 mt-6">
                 <button
                   onClick={() => {
+                    if (!comment.trim()) {
+                      toast.error('Please add a comment before approving');
+                      return;
+                    }
                     handleApproveReject(selectedRequest.user_id, true);
-                    handleCloseModal();
                   }}
-                  disabled={processingId === selectedRequest.user_id}
+                  disabled={processingId === selectedRequest.user_id || !comment.trim()}
                   className="flex-1 py-2.5 sm:py-3 px-4 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors disabled:opacity-50 text-sm sm:text-base"
                 >
                   {processingId === selectedRequest.user_id ? (
@@ -302,10 +319,13 @@ const KYCRequest = () => {
                 </button>
                 <button
                   onClick={() => {
+                    if (!comment.trim()) {
+                      toast.error('Please add a comment before rejecting');
+                      return;
+                    }
                     handleApproveReject(selectedRequest.user_id, false);
-                    handleCloseModal();
                   }}
-                  disabled={processingId === selectedRequest.user_id}
+                  disabled={processingId === selectedRequest.user_id || !comment.trim()}
                   className="flex-1 py-2.5 sm:py-3 px-4 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-50 text-sm sm:text-base"
                 >
                   <div className="flex items-center justify-center gap-2">

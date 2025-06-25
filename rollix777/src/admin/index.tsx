@@ -10,8 +10,8 @@ import Sliders from './pages/Sliders';
 import Games from './pages/Games';
 import KYCRequest from './pages/KYCRequest';
 import Userdetail from './pages/Userdetail';
-
-
+import Rates from "./pages/rate"
+import QueryManagement from "./pages/QueryManagement"
 import Coupon from './pages/Coupon';
 import Recharge from './pages/Recharge';
 
@@ -24,12 +24,12 @@ const AdminRoutes = () => {
         <Route index element={<Dashboard />} />
         <Route path="users" element={<Users />} />
         <Route path="bank-accounts" element={<BankAccounts />} />
-
+        <Route path='rate' element={<Rates/>} />
         <Route path="user-detail/:userId" element={<Userdetail />} />
 
         <Route path="coupon" element={<Coupon/>} />
         <Route path="recharge" element={<Recharge/>} />
-
+        <Route path="query" element={<QueryManagement/>} />
         <Route path="withdrawals" element={<Withdrawals/>} />
         <Route path="reports" element={<Reports />} />
         <Route path="sliders" element={<Sliders />} />

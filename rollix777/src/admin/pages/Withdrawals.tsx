@@ -150,6 +150,10 @@ const Withdrawals = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [showCommentModal, setShowCommentModal] = useState(false);
+  const [selectedWithdrawal, setSelectedWithdrawal] = useState<Withdrawal | null>(null);
+  const [comment, setComment] = useState('');
+  const [pendingAction, setPendingAction] = useState<'approve' | 'reject' | null>(null);
 
   const fetchWithdrawals = async (page: number) => {
     try {
@@ -185,16 +189,16 @@ const Withdrawals = () => {
     try {
       setProcessingId(withdrawalId);
       setError(null);
-      // http://localhost:5000/api/wallet/withdrawal/approve/150
       
       const response = await axios.put(`${baseUrl}/api/wallet/withdrawal/approve/${withdrawalId}`, {
-        status: newStatus === STATUS_CODES.APPROVED ? '1' : '2'
+        status: newStatus === STATUS_CODES.APPROVED ? '1' : '2',
+        note: comment
       });
       
       if (response.data.success) {
         toast.success(response.data.message);
-        // Refresh the withdrawals list while maintaining the current page
         await fetchWithdrawals(currentPage);
+        handleCloseCommentModal();
       } else {
         throw new Error(response.data.message || `Failed to update withdrawal status`);
       }
@@ -342,6 +346,102 @@ const Withdrawals = () => {
     </div>
   );
 
+  const handleOpenCommentModal = (withdrawal: Withdrawal, action: 'approve' | 'reject') => {
+    setSelectedWithdrawal(withdrawal);
+    setPendingAction(action);
+    setShowCommentModal(true);
+  };
+
+  const handleCloseCommentModal = () => {
+    setShowCommentModal(false);
+    setSelectedWithdrawal(null);
+    setPendingAction(null);
+    setComment('');
+  };
+
+  const handleSubmitComment = () => {
+    if (!selectedWithdrawal || !pendingAction || !comment.trim()) {
+      toast.error('Please enter a comment');
+      return;
+    }
+
+    handleStatusChange(
+      selectedWithdrawal.withdrawalId,
+      pendingAction === 'approve' ? STATUS_CODES.APPROVED : STATUS_CODES.REJECTED
+    );
+  };
+
+  const renderCommentModal = () => {
+    if (!showCommentModal || !selectedWithdrawal) return null;
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleCloseCommentModal}></div>
+        
+        <div className="relative w-full max-w-md bg-gradient-to-b from-[#252547] to-[#1A1A2E] rounded-2xl overflow-hidden animate-fadeIn">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+          
+          <div className="flex justify-between items-center p-4 border-b border-purple-500/10">
+            <h2 className="text-lg font-bold text-white">
+              {pendingAction === 'approve' ? 'Approve' : 'Reject'} Withdrawal
+            </h2>
+            <button
+              onClick={handleCloseCommentModal}
+              className="w-8 h-8 flex items-center justify-center rounded-full bg-[#1A1A2E] text-gray-400 hover:text-white transition-colors"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="p-4">
+            <div className="mb-4">
+              <label htmlFor="comment" className="block text-sm font-medium text-gray-300 mb-2">
+                Add Comment
+              </label>
+              <textarea
+                id="comment"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Enter your comment here..."
+                className="w-full h-24 px-4 py-3 bg-[#1A1A2E] border border-purple-500/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleCloseCommentModal}
+                className="flex-1 py-2.5 px-4 bg-[#1A1A2E] text-gray-400 rounded-lg hover:bg-[#252547] transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSubmitComment}
+                disabled={!comment.trim() || processingId === selectedWithdrawal.withdrawalId}
+                className={`flex-1 py-2.5 px-4 rounded-lg transition-colors ${
+                  pendingAction === 'approve'
+                    ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                    : 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                } disabled:opacity-50`}
+              >
+                {processingId === selectedWithdrawal.withdrawalId ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="animate-spin" size={16} />
+                    <span>Processing...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-2">
+                    {pendingAction === 'approve' ? <Check size={16} /> : <X size={16} />}
+                    <span>{pendingAction === 'approve' ? 'Approve' : 'Reject'}</span>
+                  </div>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderMobileCard = (withdrawal: Withdrawal) => (
     <div className="bg-[#1e1e3f] rounded-lg overflow-hidden border border-[#2f2f5a]">
       {/* Header with ID and Status */}
@@ -397,7 +497,7 @@ const Withdrawals = () => {
         {withdrawal.withdrawalStatus.code === STATUS_CODES.PENDING && (
           <div className="flex gap-3 pt-3 border-t border-[#2f2f5a] mt-3">
             <button
-              onClick={() => handleStatusChange(withdrawal.withdrawalId, STATUS_CODES.APPROVED)}
+              onClick={() => handleOpenCommentModal(withdrawal, 'approve')}
               disabled={processingId === withdrawal.withdrawalId}
               className="flex-1 py-2.5 px-4 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors disabled:opacity-50 active:scale-98"
             >
@@ -414,7 +514,7 @@ const Withdrawals = () => {
               )}
             </button>
             <button
-              onClick={() => handleStatusChange(withdrawal.withdrawalId, STATUS_CODES.REJECTED)}
+              onClick={() => handleOpenCommentModal(withdrawal, 'reject')}
               disabled={processingId === withdrawal.withdrawalId}
               className="flex-1 py-2.5 px-4 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-50 active:scale-98"
             >
@@ -545,7 +645,7 @@ const Withdrawals = () => {
                           {withdrawal.withdrawalStatus.code === STATUS_CODES.PENDING && (
                             <div className="flex gap-2">
                               <button
-                                onClick={() => handleStatusChange(withdrawal.withdrawalId, STATUS_CODES.APPROVED)}
+                                onClick={() => handleOpenCommentModal(withdrawal, 'approve')}
                                 disabled={processingId === withdrawal.withdrawalId}
                                 className="p-1.5 bg-green-500/20 text-green-400 rounded hover:bg-green-500/30 transition-colors disabled:opacity-50"
                                 title="Approve withdrawal"
@@ -557,7 +657,7 @@ const Withdrawals = () => {
                                 )}
                               </button>
                               <button
-                                onClick={() => handleStatusChange(withdrawal.withdrawalId, STATUS_CODES.REJECTED)}
+                                onClick={() => handleOpenCommentModal(withdrawal, 'reject')}
                                 disabled={processingId === withdrawal.withdrawalId}
                                 className="p-1.5 bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 transition-colors disabled:opacity-50"
                                 title="Reject withdrawal"
@@ -577,6 +677,7 @@ const Withdrawals = () => {
           )}
         </div>
       </div>
+      {renderCommentModal()}
     </div>
   );
 };

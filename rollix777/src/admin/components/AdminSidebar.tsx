@@ -11,7 +11,9 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  CurrencyIcon,
   Tag,
+  MessageCircleQuestion,
   FileCheck
 } from 'lucide-react';
 
@@ -27,6 +29,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, toggleSidebar, onNa
   const menuItems = [
     { icon: <LayoutDashboard size={20} />, label: 'Dashboard', path: '/admin' },
     { icon: <Users size={20} />, label: 'Users', path: '/admin/users' },
+    { icon: <CurrencyIcon size={20} />, label: 'Rates Conversion', path: '/admin/rate' },
     { icon: <CreditCard size={20} />, label: 'Bank Accounts', path: '/admin/bank-accounts' },
     { icon: <Tag size={20} />, label: 'Coupon', path: '/admin/coupon' },
     { icon: <CreditCard size={20} />, label: 'Recharge', path: '/admin/recharge' },
@@ -34,7 +37,8 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, toggleSidebar, onNa
     { icon: <BarChart3 size={20} />, label: 'Reports', path: '/admin/reports' },
     { icon: <Image size={20} />, label: 'Sliders', path: '/admin/sliders' },
     { icon: <Gamepad2 size={20} />, label: 'Games', path: '/admin/games' },
-    { icon: <FileCheck size={20} />, label: 'KYC Requests', path: '/admin/kyc-requests' },
+    { icon: <MessageCircleQuestion size={20} />, label: 'Query Management', path: '/admin/query' },
+     { icon: <FileCheck size={20} />, label: 'KYC Requests', path: '/admin/kyc-requests' },
     { icon: <Settings size={20} />, label: 'Settings', path: '/admin/settings' },
   ];
 
