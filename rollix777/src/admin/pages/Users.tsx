@@ -1,23 +1,37 @@
-import React, { useEffect, useState } from 'react';
-import { Search, Filter, Plus, Edit, Trash2, Eye, User, Mail, Phone, Calendar } from 'lucide-react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import {
+  Search,
+  Filter,
+  Plus,
+  Edit,
+  Trash2,
+  Eye,
+  User,
+  Mail,
+  Phone,
+  Calendar,
+} from "lucide-react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Users = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState<any[]>([]);
   const [error, setError] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [filteredData, setFilteredData] = useState([]);
 
   // Get All Users
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get('https://api.rollix777.com/api/user/allusers');
+        const response = await axios.get(
+          "https://api.rollix777.com/api/user/allusers"
+        );
         setUsers(response.data);
         console.log(response.data);
       } catch (error) {
@@ -45,7 +59,10 @@ const Users = () => {
   // Add New User
   const addNewUser = async (userData) => {
     try {
-      const response = await axios.post('https://api.rollix777.com/api/admin/user', userData);
+      const response = await axios.post(
+        "https://api.rollix777.com/api/admin/user",
+        userData
+      );
       setUsers((prevUsers) => [...prevUsers, response.data]);
       alert("User added successfully.");
     } catch (err) {
@@ -57,7 +74,10 @@ const Users = () => {
   // Update User
   const updateUser = async (id, userData) => {
     try {
-      const response = await axios.put(`https://api.rollix777.com/api/user/user/${id}`, userData);
+      const response = await axios.put(
+        `https://api.rollix777.com/api/user/user/${id}`,
+        userData
+      );
       setUsers((prevUsers) =>
         prevUsers.map((user) => (user.id === id ? response.data : user))
       );
@@ -70,10 +90,14 @@ const Users = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'active': return 'bg-green-500/20 text-green-400';
-      case 'inactive': return 'bg-gray-500/20 text-gray-400';
-      case 'suspended': return 'bg-red-500/20 text-red-400';
-      default: return 'bg-gray-500/20 text-gray-400';
+      case "active":
+        return "bg-green-500/20 text-green-400";
+      case "inactive":
+        return "bg-gray-500/20 text-gray-400";
+      case "suspended":
+        return "bg-red-500/20 text-red-400";
+      default:
+        return "bg-gray-500/20 text-gray-400";
     }
   };
 
@@ -86,16 +110,27 @@ const Users = () => {
   }
 
   if (error) {
-    return <div className="text-red-500 text-center py-6">Error: {error.message}</div>;
+    return (
+      <div className="text-red-500 text-center py-6">
+        Error: {error.message}
+      </div>
+    );
   }
+
+  const handleFilter = () => {
+    const data = users.filter((user) =>
+      user.phone?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredData(data);
+  };
 
   // Popup Component for Adding User
   const Popup = ({ onClose, onAddUser }) => {
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [phone, setPhone] = useState('');
-    const [dob, setDob] = useState('');
+    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [phone, setPhone] = useState("");
+    const [dob, setDob] = useState("");
 
     const handleSubmit = async (e) => {
       e.preventDefault();
@@ -226,7 +261,7 @@ const Users = () => {
   const EditPopup = ({ onClose, onUpdateUser, user }) => {
     const [username, setUsername] = useState(user.username);
     const [email, setEmail] = useState(user.email);
-    const [password, setPassword] = useState('');
+    const [password, setPassword] = useState("");
     const [phone, setPhone] = useState(user.phone);
     const [dob, setDob] = useState(user.dob);
 
@@ -367,7 +402,9 @@ const Users = () => {
         </button>
       </div>
 
-      {showPopup && <Popup onClose={() => setShowPopup(false)} onAddUser={addNewUser} />}
+      {showPopup && (
+        <Popup onClose={() => setShowPopup(false)} onAddUser={addNewUser} />
+      )}
       {showEditPopup && (
         <EditPopup
           onClose={() => setShowEditPopup(false)}
@@ -385,11 +422,17 @@ const Users = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full py-2 pl-10 pr-4 bg-[#252547] border border-purple-500/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
           />
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+          <Search
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            size={18}
+          />
         </div>
-        <button className="py-2 px-4 bg-[#252547] border border-purple-500/20 rounded-lg text-white flex items-center justify-center gap-2 hover:bg-[#2f2f5a] transition-colors">
-          <Filter size={18} />
-          <span>Filters</span>
+        <button
+          onClick={handleFilter}
+          className="py-2 px-4 bg-[#252547] border border-purple-500/20 rounded-lg text-white flex items-center justify-center gap-2 hover:bg-[#2f2f5a] transition-colors"
+        >
+          <Search size={18} />
+          <span>Search</span>
         </button>
       </div>
 
@@ -400,7 +443,7 @@ const Users = () => {
               <tr className="text-left text-gray-400 text-sm border-b border-purple-500/10">
                 <th className="py-4 px-6 font-medium">ID</th>
                 <th className="py-4 px-6 font-medium">Name</th>
-                <th className="py-4 px-6 font-medium">Email</th>
+                <th className="py-4 px-6 font-medium">Contact</th>
                 <th className="py-4 px-6 font-medium">Status</th>
                 <th className="py-4 px-6 font-medium">Balance</th>
                 <th className="py-4 px-6 font-medium">Joined</th>
@@ -408,22 +451,35 @@ const Users = () => {
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="border-b border-purple-500/10 text-white hover:bg-purple-500/5">
+              {(filteredData.length > 0 ? filteredData : users).map((user) => (
+                <tr
+                  key={user.id}
+                  className="border-b border-purple-500/10 text-white hover:bg-purple-500/5"
+                >
                   <td className="py-4 px-6">#{user.id}</td>
-                  <td 
+                  <td
                     onClick={() => handleNameClick(user.id)}
                     className="py-4 px-6 cursor-pointer hover:text-purple-400 active:text-purple-500 transition-colors"
                   >
-                    <span className="hover:underline decoration-purple-500/50">{user.username}</span>
+                    <span className="hover:underline decoration-purple-500/50">
+                      {user.username}
+                    </span>
                   </td>
-                  <td className="py-4 px-6">{user.email}</td>
+                  <td className="py-4 px-6">{user.phone}</td>
                   <td className="py-4 px-6">
-                    <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(user.status)}`}>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
+                        user.status
+                      )}`}
+                    >
                       {user.status || "active"}
                     </span>
                   </td>
-                  <td className="py-4 px-6">{user.balance}</td>
+                  <td className="py-4 px-6">
+                    {user.wallets?.find(
+                      (wallet: any) => wallet.cryptoname === "INR"
+                    )?.balance || "0"}
+                  </td>
                   <td className="py-4 px-6">{"N/A"}</td>
                   <td className="py-4 px-6">
                     <div className="flex gap-2">
