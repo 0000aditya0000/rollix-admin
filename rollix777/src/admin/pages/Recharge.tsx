@@ -181,7 +181,7 @@ function Recharge() {
                     <tr key={recharge.recharge_id} className="border-b border-purple-500/10 hover:bg-purple-500/5 transition-colors">
                       <td className="py-4 text-white font-medium">{recharge.order_id}</td>
                       <td className="py-4 text-white">{recharge.userId}</td>
-                      <td className="py-4 text-purple-400 font-medium">₹{recharge.amount}</td>
+                      <td className="py-4 text-purple-400 font-medium">{recharge.type === "INR" ? "₹ " : "$ "}{recharge.amount}</td>
                       <td className="py-4 text-white">{recharge.type}</td>
                       <td className="py-4 text-white">{recharge.mode}</td>
                       <td className="py-4">

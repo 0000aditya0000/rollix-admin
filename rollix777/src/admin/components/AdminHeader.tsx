@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Menu, Bell, Search, User, LogOut } from 'lucide-react';
+import React, { useState } from "react";
+import { Menu, Bell, Search, User, LogOut } from "lucide-react";
 
 interface AdminHeaderProps {
   toggleSidebar: () => void;
@@ -13,7 +13,7 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ toggleSidebar }) => {
     <header className="bg-[#1A1A2E]/80 backdrop-blur-md border-b border-purple-500/10 sticky top-0 z-30 h-16">
       <div className="flex items-center justify-between px-4 py-3 h-full">
         <div className="flex items-center gap-4">
-          <button 
+          <button
             onClick={toggleSidebar}
             className="p-2 rounded-lg bg-[#252547] text-purple-400 hover:bg-[#2f2f5a] transition-colors md:hidden"
           >
@@ -25,13 +25,16 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ toggleSidebar }) => {
               placeholder="Search..."
               className="py-2 pl-10 pr-4 bg-[#252547] border border-purple-500/20 rounded-lg text-white focus:outline-none focus:border-purple-500 w-64"
             />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={18}
+            />
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3">
           {/* Notifications */}
-          <div className="relative">
+          {/* <div className="relative">
             <button 
               onClick={() => setShowNotifications(!showNotifications)}
               className="relative p-2 rounded-lg bg-[#252547] text-purple-400 hover:bg-[#2f2f5a] transition-colors"
@@ -71,11 +74,11 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ toggleSidebar }) => {
                 </div>
               </div>
             )}
-          </div>
-          
+          </div> */}
+
           {/* User Menu */}
           <div className="relative">
-            <button 
+            <button
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center gap-2 p-2 rounded-lg bg-[#252547] text-white hover:bg-[#2f2f5a] transition-colors"
             >
@@ -84,7 +87,7 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ toggleSidebar }) => {
               </div>
               <span className="hidden md:inline">Admin</span>
             </button>
-            
+
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-[#252547] rounded-xl border border-purple-500/20 shadow-lg z-50">
                 <div className="p-3 border-b border-purple-500/10">
