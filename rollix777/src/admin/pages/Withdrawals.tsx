@@ -1,8 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Check, X, Loader2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import axios from 'axios';
-import { baseUrl } from '../../lib/config/server';
-import { toast } from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import {
+  Search,
+  Check,
+  X,
+  Loader2,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import axios from "axios";
+import { baseUrl } from "../../lib/config/server";
+import { toast } from "react-hot-toast";
 
 interface WithdrawalStatus {
   code: string;
@@ -54,81 +62,88 @@ interface PaginatedResponse {
 }
 
 const STATUS_CODES = {
-  PENDING: '0',
-  APPROVED: '1',
-  REJECTED: '2',
-  ALL: '3'
+  PENDING: "0",
+  APPROVED: "1",
+  REJECTED: "2",
+  ALL: "3",
 } as const;
 
-type StatusCode = typeof STATUS_CODES[keyof typeof STATUS_CODES];
+type StatusCode = (typeof STATUS_CODES)[keyof typeof STATUS_CODES];
 
 const STATUS_LABELS: Record<StatusCode, string> = {
-  [STATUS_CODES.PENDING]: 'Pending',
-  [STATUS_CODES.APPROVED]: 'Approved',
-  [STATUS_CODES.REJECTED]: 'Rejected',
-  [STATUS_CODES.ALL]: 'All'
+  [STATUS_CODES.PENDING]: "Pending",
+  [STATUS_CODES.APPROVED]: "Approved",
+  [STATUS_CODES.REJECTED]: "Rejected",
+  [STATUS_CODES.ALL]: "All",
 };
 
 const ITEMS_PER_PAGE = 20;
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 
 const getCryptoColor = (cryptoname: string) => {
   switch (cryptoname.toUpperCase()) {
-    case 'BTC':
-      return 'text-orange-400';
-    case 'ETH':
-      return 'text-blue-400';
-    case 'USDT':
-      return 'text-green-400';
-    case 'INR':
-      return 'text-purple-400';
+    case "BTC":
+      return "text-orange-400";
+    case "ETH":
+      return "text-blue-400";
+    case "USDT":
+      return "text-green-400";
+    case "INR":
+      return "text-purple-400";
     default:
-      return 'text-gray-400';
+      return "text-gray-400";
   }
 };
 
-const formatAmount = (amount: string | null | undefined, cryptoname: string) => {
-  if (!amount) return 'N/A';
-  return (
-    <div className="flex items-center gap-1">
-      <span className="text-white">{Number(amount).toLocaleString()}</span>
-      <span className={`${getCryptoColor(cryptoname)} font-medium`}>
-        {cryptoname.toUpperCase()}
-      </span>
-    </div>
-  );
-};
+// const formatAmount = (
+//   amount: string | null | undefined,
+//   cryptoname: string
+// ) => {
+//   if (!amount) return "N/A";
+//   return (
+//     <div className="flex items-center gap-1">
+//       <span className="text-white">{Number(amount).toLocaleString()}</span>
+//       <span className={`${getCryptoColor(cryptoname)} font-medium`}>
+//         {cryptoname.toUpperCase()}
+//       </span>
+//     </div>
+//   );
+// };
 
 const formatUserInfo = (user: User) => {
-  if (!user) return 'N/A';
-  return user.name || user.email || user.username || user.phone || 'N/A';
+  if (!user) return "N/A";
+  return user.name || user.email || user.username || user.phone || "N/A";
 };
 
 const formatAccountDetails = (details: BankDetails | CryptoDetails) => {
-  if (!details) return 'N/A';
-  
-  if ('walletAddress' in details) {
-    if (!details.walletAddress) return 'N/A';
+  if (!details) return "N/A";
+
+  if ("walletAddress" in details) {
+    if (!details.walletAddress) return "N/A";
     return (
       <div className="flex flex-col">
-        <span className="text-blue-400 font-medium">{details.walletAddress}</span>
+        <span className="text-blue-400 font-medium">
+          {details.walletAddress}
+        </span>
         {/* <span className="text-xs text-gray-400">Network: {details.networkType || 'N/A'}</span> */}
       </div>
     );
   }
-  
+
   return (
     <div className="flex flex-col">
-      <span className="text-emerald-400 font-medium">{details.accountNumber || 'N/A'}</span>
+      <span className="text-emerald-400 font-medium">
+        {details.accountNumber || "N/A"}
+      </span>
       <span className="text-xs text-gray-400">
         {/* Bank: {details.bankAccountStatus || 'N/A'}  */}
       </span>
@@ -137,12 +152,14 @@ const formatAccountDetails = (details: BankDetails | CryptoDetails) => {
 };
 
 const getMethodColor = (method: string) => {
-  return method === 'Crypto' ? 'text-purple-400' : 'text-orange-400';
+  return method === "Crypto" ? "text-purple-400" : "text-orange-400";
 };
 
 const Withdrawals = () => {
-  const [statusFilter, setStatusFilter] = useState<StatusCode>(STATUS_CODES.ALL);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusCode>(
+    STATUS_CODES.ALL
+  );
+  const [searchTerm, setSearchTerm] = useState("");
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -151,9 +168,89 @@ const Withdrawals = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [showCommentModal, setShowCommentModal] = useState(false);
-  const [selectedWithdrawal, setSelectedWithdrawal] = useState<Withdrawal | null>(null);
-  const [comment, setComment] = useState('');
-  const [pendingAction, setPendingAction] = useState<'approve' | 'reject' | null>(null);
+  const [selectedWithdrawal, setSelectedWithdrawal] =
+    useState<Withdrawal | null>(null);
+  const [comment, setComment] = useState("");
+  const [pendingAction, setPendingAction] = useState<
+    "approve" | "reject" | null
+  >(null);
+
+  const [conversionRate, setConversionRate] = useState<ConversionRate | null>(
+    null
+  );
+  const [showConvertedAmounts, setShowConvertedAmounts] = useState(false);
+  const [rateLoading, setRateLoading] = useState(false);
+
+  // Fetch conversion rate
+  const fetchConversionRate = async () => {
+    try {
+      setRateLoading(true);
+      const response = await axios.get(
+        "https://api.rollix777.com/api/rates/conversion-rate/INR_USDT"
+      );
+      if (response.data && response.data.rate) {
+        setConversionRate({
+          rate: parseFloat(response.data.rate),
+          last_updated: new Date().toISOString(),
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching conversion rate:", error);
+    } finally {
+      setRateLoading(false);
+    }
+  };
+
+  // Convert INR to USDT
+  const convertINRToUSDT = (inrAmount: string | number): number => {
+    if (!conversionRate) return 0;
+    const amount =
+      typeof inrAmount === "string" ? parseFloat(inrAmount) : inrAmount;
+    return amount / conversionRate.rate;
+  };
+
+  // Format amount with conversion option
+  const formatAmount = (
+    amount: string | null | undefined,
+    cryptoname: string,
+    conversionRate?: number
+  ) => {
+    if (!amount) return "N/A";
+
+    const numAmount = Number(amount);
+    const cryptoName = cryptoname.toUpperCase();
+
+    // Case: INR — no conversion
+    if (cryptoName === "INR") {
+      return (
+        <div className="flex items-center gap-1">
+          <span className="text-white">{numAmount.toLocaleString()}</span>
+          <span className="text-green-400 font-medium">INR</span>
+        </div>
+      );
+    }
+
+    // Case: USDT — convert from INR to USDT
+    const usdtAmount =
+      conversionRate && conversionRate !== 0 ? numAmount / conversionRate : 0;
+
+    return (
+      <div className="flex flex-col gap-1">
+        {/* Converted Amount */}
+        <div className="flex items-center gap-1">
+          <span className="text-white">
+            {usdtAmount.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
+          </span>
+          <span className={`${getCryptoColor(cryptoName)} font-medium`}>
+            {cryptoName}
+          </span>
+        </div>
+      </div>
+    );
+  };
 
   const fetchWithdrawals = async (page: number) => {
     try {
@@ -162,20 +259,21 @@ const Withdrawals = () => {
       const response = await axios.get<PaginatedResponse>(
         `${baseUrl}/api/wallet/withdrawl-requests/${statusFilter}?page=${page}&limit=${ITEMS_PER_PAGE}`
       );
-      
+
       if (response.data.success) {
         setWithdrawals(response.data.data || []);
         setTotalPages(response.data.pagination.totalPages);
         setTotalItems(response.data.pagination.totalRecords);
         setCurrentPage(response.data.pagination.currentPage);
       } else {
-        throw new Error(response.data.message || 'Failed to fetch withdrawals');
+        throw new Error(response.data.message || "Failed to fetch withdrawals");
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch withdrawals';
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to fetch withdrawals";
       setError(errorMessage);
       toast.error(errorMessage);
-      console.error('Error fetching withdrawals:', error);
+      console.error("Error fetching withdrawals:", error);
     } finally {
       setLoading(false);
     }
@@ -183,29 +281,41 @@ const Withdrawals = () => {
 
   useEffect(() => {
     fetchWithdrawals(1);
+    fetchConversionRate();
   }, [statusFilter]); // Refetch when status filter changes
 
-  const handleStatusChange = async (withdrawalId: number, newStatus: StatusCode) => {
+  const handleStatusChange = async (
+    withdrawalId: number,
+    newStatus: StatusCode
+  ) => {
     try {
       setProcessingId(withdrawalId);
       setError(null);
-      
-      const response = await axios.put(`${baseUrl}/api/wallet/withdrawal/approve/${withdrawalId}`, {
-        status: newStatus === STATUS_CODES.APPROVED ? '1' : '2',
-        note: comment
-      });
-      
+
+      const response = await axios.put(
+        `${baseUrl}/api/wallet/withdrawal/approve/${withdrawalId}`,
+        {
+          status: newStatus === STATUS_CODES.APPROVED ? "1" : "2",
+          note: comment,
+        }
+      );
+
       if (response.data.success) {
         toast.success(response.data.message);
         await fetchWithdrawals(currentPage);
         handleCloseCommentModal();
       } else {
-        throw new Error(response.data.message || `Failed to update withdrawal status`);
+        throw new Error(
+          response.data.message || `Failed to update withdrawal status`
+        );
       }
     } catch (error: any) {
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to update status';
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to update status";
       toast.error(errorMessage);
-      console.error('Error updating withdrawal status:', error);
+      console.error("Error updating withdrawal status:", error);
     } finally {
       setProcessingId(null);
     }
@@ -219,20 +329,20 @@ const Withdrawals = () => {
   const getStatusColor = (statusCode: string) => {
     switch (statusCode) {
       case STATUS_CODES.APPROVED:
-        return 'text-green-400';
+        return "text-green-400";
       case STATUS_CODES.REJECTED:
-        return 'text-red-400';
+        return "text-red-400";
       case STATUS_CODES.PENDING:
-        return 'text-yellow-400';
+        return "text-yellow-400";
       default:
-        return 'text-gray-400';
+        return "text-gray-400";
     }
   };
 
   const renderPagination = () => {
     if (totalPages <= 1) return null;
 
-    const startRecord = ((currentPage - 1) * ITEMS_PER_PAGE) + 1;
+    const startRecord = (currentPage - 1) * ITEMS_PER_PAGE + 1;
     const endRecord = Math.min(currentPage * ITEMS_PER_PAGE, totalItems);
 
     const getPageNumbers = () => {
@@ -256,7 +366,7 @@ const Withdrawals = () => {
           if (i - l === 2) {
             rangeWithDots.push(l + 1);
           } else if (i - l !== 1) {
-            rangeWithDots.push('...');
+            rangeWithDots.push("...");
           }
         }
         rangeWithDots.push(i);
@@ -297,15 +407,21 @@ const Withdrawals = () => {
           </button>
           {getPageNumbers().map((pageNum) => (
             <button
-              key={typeof pageNum === 'number' ? `page-${pageNum}` : `ellipsis-${Math.random()}`}
-              onClick={() => typeof pageNum === 'number' && handlePageChange(pageNum)}
-              disabled={loading || typeof pageNum !== 'number'}
+              key={
+                typeof pageNum === "number"
+                  ? `page-${pageNum}`
+                  : `ellipsis-${Math.random()}`
+              }
+              onClick={() =>
+                typeof pageNum === "number" && handlePageChange(pageNum)
+              }
+              disabled={loading || typeof pageNum !== "number"}
               className={`min-w-[40px] h-10 rounded-lg transition-all duration-200 flex-shrink-0 ${
                 currentPage === pageNum
-                  ? 'bg-purple-600 text-white font-medium shadow-lg shadow-purple-500/25'
-                  : typeof pageNum === 'number'
-                  ? 'bg-[#252547] text-gray-400 hover:bg-[#2f2f5a] hover:text-purple-400'
-                  : 'bg-transparent text-gray-400'
+                  ? "bg-purple-600 text-white font-medium shadow-lg shadow-purple-500/25"
+                  : typeof pageNum === "number"
+                  ? "bg-[#252547] text-gray-400 hover:bg-[#2f2f5a] hover:text-purple-400"
+                  : "bg-transparent text-gray-400"
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               {pageNum}
@@ -328,7 +444,9 @@ const Withdrawals = () => {
     <div className="flex flex-col items-center justify-center p-8 text-gray-400">
       <AlertCircle size={48} className="mb-4" />
       <p className="text-lg font-medium">No withdrawals found</p>
-      <p className="text-sm">There are no withdrawal requests matching your filters</p>
+      <p className="text-sm">
+        There are no withdrawal requests matching your filters
+      </p>
     </div>
   );
 
@@ -337,7 +455,7 @@ const Withdrawals = () => {
       <AlertCircle size={48} className="mb-4" />
       <p className="text-lg font-medium">Error loading withdrawals</p>
       <p className="text-sm">{error}</p>
-      <button 
+      <button
         onClick={() => fetchWithdrawals(currentPage)}
         className="mt-4 px-4 py-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
       >
@@ -346,7 +464,10 @@ const Withdrawals = () => {
     </div>
   );
 
-  const handleOpenCommentModal = (withdrawal: Withdrawal, action: 'approve' | 'reject') => {
+  const handleOpenCommentModal = (
+    withdrawal: Withdrawal,
+    action: "approve" | "reject"
+  ) => {
     setSelectedWithdrawal(withdrawal);
     setPendingAction(action);
     setShowCommentModal(true);
@@ -356,18 +477,20 @@ const Withdrawals = () => {
     setShowCommentModal(false);
     setSelectedWithdrawal(null);
     setPendingAction(null);
-    setComment('');
+    setComment("");
   };
 
   const handleSubmitComment = () => {
     if (!selectedWithdrawal || !pendingAction || !comment.trim()) {
-      toast.error('Please enter a comment');
+      toast.error("Please enter a comment");
       return;
     }
 
     handleStatusChange(
       selectedWithdrawal.withdrawalId,
-      pendingAction === 'approve' ? STATUS_CODES.APPROVED : STATUS_CODES.REJECTED
+      pendingAction === "approve"
+        ? STATUS_CODES.APPROVED
+        : STATUS_CODES.REJECTED
     );
   };
 
@@ -376,14 +499,17 @@ const Withdrawals = () => {
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-        <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={handleCloseCommentModal}></div>
-        
+        <div
+          className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+          onClick={handleCloseCommentModal}
+        ></div>
+
         <div className="relative w-full max-w-md bg-gradient-to-b from-[#252547] to-[#1A1A2E] rounded-2xl overflow-hidden animate-fadeIn">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
-          
+
           <div className="flex justify-between items-center p-4 border-b border-purple-500/10">
             <h2 className="text-lg font-bold text-white">
-              {pendingAction === 'approve' ? 'Approve' : 'Reject'} Withdrawal
+              {pendingAction === "approve" ? "Approve" : "Reject"} Withdrawals
             </h2>
             <button
               onClick={handleCloseCommentModal}
@@ -395,7 +521,10 @@ const Withdrawals = () => {
 
           <div className="p-4">
             <div className="mb-4">
-              <label htmlFor="comment" className="block text-sm font-medium text-gray-300 mb-2">
+              <label
+                htmlFor="comment"
+                className="block text-sm font-medium text-gray-300 mb-2"
+              >
                 Add Comment
               </label>
               <textarea
@@ -416,11 +545,14 @@ const Withdrawals = () => {
               </button>
               <button
                 onClick={handleSubmitComment}
-                disabled={!comment.trim() || processingId === selectedWithdrawal.withdrawalId}
+                disabled={
+                  !comment.trim() ||
+                  processingId === selectedWithdrawal.withdrawalId
+                }
                 className={`flex-1 py-2.5 px-4 rounded-lg transition-colors ${
-                  pendingAction === 'approve'
-                    ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
-                    : 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                  pendingAction === "approve"
+                    ? "bg-green-500/20 text-green-400 hover:bg-green-500/30"
+                    : "bg-red-500/20 text-red-400 hover:bg-red-500/30"
                 } disabled:opacity-50`}
               >
                 {processingId === selectedWithdrawal.withdrawalId ? (
@@ -430,8 +562,14 @@ const Withdrawals = () => {
                   </div>
                 ) : (
                   <div className="flex items-center justify-center gap-2">
-                    {pendingAction === 'approve' ? <Check size={16} /> : <X size={16} />}
-                    <span>{pendingAction === 'approve' ? 'Approve' : 'Reject'}</span>
+                    {pendingAction === "approve" ? (
+                      <Check size={16} />
+                    ) : (
+                      <X size={16} />
+                    )}
+                    <span>
+                      {pendingAction === "approve" ? "Approve" : "Reject"}
+                    </span>
                   </div>
                 )}
               </button>
@@ -448,13 +586,19 @@ const Withdrawals = () => {
       <div className="flex justify-between items-center bg-[#252547] p-2">
         <div className="flex items-center gap-2">
           <span className="text-gray-400 text-sm">ID:</span>
-          <span className="text-white font-medium">#{withdrawal.withdrawalId}</span>
+          <span className="text-white font-medium">
+            #{withdrawal.withdrawalId}
+          </span>
         </div>
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-          withdrawal.withdrawalStatus.code === STATUS_CODES.APPROVED ? 'bg-green-500/20 text-green-400' :
-          withdrawal.withdrawalStatus.code === STATUS_CODES.REJECTED ? 'bg-red-500/20 text-red-400' :
-          'bg-yellow-500/20 text-yellow-400'
-        }`}>
+        <span
+          className={`px-3 py-1 rounded-full text-sm font-medium ${
+            withdrawal.withdrawalStatus.code === STATUS_CODES.APPROVED
+              ? "bg-green-500/20 text-green-400"
+              : withdrawal.withdrawalStatus.code === STATUS_CODES.REJECTED
+              ? "bg-red-500/20 text-red-400"
+              : "bg-yellow-500/20 text-yellow-400"
+          }`}
+        >
           {STATUS_LABELS[withdrawal.withdrawalStatus.code as StatusCode]}
         </span>
       </div>
@@ -465,19 +609,31 @@ const Withdrawals = () => {
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
             <span className="text-gray-400 text-xs">User</span>
-            <p className="text-white font-medium truncate">{formatUserInfo(withdrawal.user)}</p>
+            <p className="text-white font-medium truncate">
+              {formatUserInfo(withdrawal.user)}
+            </p>
           </div>
           <div className="space-y-1">
             <span className="text-gray-400 text-xs">Amount</span>
-            <div className="font-medium">{formatAmount(withdrawal.amount, withdrawal.cryptoname)}</div>
+            <div className="font-medium">
+              {formatAmount(withdrawal.amount, withdrawal.cryptoname)}
+            </div>
           </div>
         </div>
 
         {/* Method Section */}
         <div className="space-y-1">
           <span className="text-gray-400 text-xs">Method</span>
-          <p className={`font-medium uppercase ${getMethodColor('walletAddress' in withdrawal.withdrawalDetails ? 'Crypto' : 'Bank Transfer')}`}>
-            {'walletAddress' in withdrawal.withdrawalDetails ? 'CRYPTO' : 'BANK TRANSFER'}
+          <p
+            className={`font-medium uppercase ${getMethodColor(
+              "walletAddress" in withdrawal.withdrawalDetails
+                ? "Crypto"
+                : "Bank Transfer"
+            )}`}
+          >
+            {"walletAddress" in withdrawal.withdrawalDetails
+              ? "CRYPTO"
+              : "BANK TRANSFER"}
           </p>
         </div>
 
@@ -490,14 +646,18 @@ const Withdrawals = () => {
         {/* Date Section */}
         <div className="space-y-1">
           <span className="text-gray-400 text-xs">Date</span>
-          <p className="text-white">{withdrawal.requestDate ? formatDate(withdrawal.requestDate) : 'N/A'}</p>
+          <p className="text-white">
+            {withdrawal.requestDate
+              ? formatDate(withdrawal.requestDate)
+              : "N/A"}
+          </p>
         </div>
 
         {/* Actions Section */}
         {withdrawal.withdrawalStatus.code === STATUS_CODES.PENDING && (
           <div className="flex gap-3 pt-3 border-t border-[#2f2f5a] mt-3">
             <button
-              onClick={() => handleOpenCommentModal(withdrawal, 'approve')}
+              onClick={() => handleOpenCommentModal(withdrawal, "approve")}
               disabled={processingId === withdrawal.withdrawalId}
               className="flex-1 py-2.5 px-4 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors disabled:opacity-50 active:scale-98"
             >
@@ -514,7 +674,7 @@ const Withdrawals = () => {
               )}
             </button>
             <button
-              onClick={() => handleOpenCommentModal(withdrawal, 'reject')}
+              onClick={() => handleOpenCommentModal(withdrawal, "reject")}
               disabled={processingId === withdrawal.withdrawalId}
               className="flex-1 py-2.5 px-4 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-50 active:scale-98"
             >
@@ -532,20 +692,18 @@ const Withdrawals = () => {
   return (
     <div className="space-y-6 lg:p-6 ">
       <div className="flex justify-between items-center flex-wrap gap-4">
-        <h1 className="text-2xl md:text-3xl font-bold text-white">Withdrawals</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-white">
+          Withdrawal
+        </h1>
         <button
           onClick={() => fetchWithdrawals(currentPage)}
           disabled={loading}
           className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors disabled:opacity-50"
         >
-          {loading ? (
-            <Loader2 className="animate-spin" size={18} />
-          ) : (
-            'Refresh'
-          )}
+          {loading ? <Loader2 className="animate-spin" size={18} /> : "Refresh"}
         </button>
       </div>
-      
+
       {/* Filters and Search */}
       <div className="flex flex-col md:flex-row md:justify-between gap-4">
         <div className="relative w-full md:w-1/3">
@@ -556,24 +714,47 @@ const Withdrawals = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full py-2 pl-10 pr-4 bg-[#252547] border border-purple-500/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
           />
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+          <Search
+            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            size={18}
+          />
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 md:flex gap-2">
           {[
-            { id: 'all', value: STATUS_CODES.ALL, label: STATUS_LABELS[STATUS_CODES.ALL] },
-            { id: 'pending', value: STATUS_CODES.PENDING, label: STATUS_LABELS[STATUS_CODES.PENDING] },
-            { id: 'approved', value: STATUS_CODES.APPROVED, label: STATUS_LABELS[STATUS_CODES.APPROVED] },
-            { id: 'rejected', value: STATUS_CODES.REJECTED, label: STATUS_LABELS[STATUS_CODES.REJECTED] }
+            {
+              id: "all",
+              value: STATUS_CODES.ALL,
+              label: STATUS_LABELS[STATUS_CODES.ALL],
+            },
+            {
+              id: "pending",
+              value: STATUS_CODES.PENDING,
+              label: STATUS_LABELS[STATUS_CODES.PENDING],
+            },
+            {
+              id: "approved",
+              value: STATUS_CODES.APPROVED,
+              label: STATUS_LABELS[STATUS_CODES.APPROVED],
+            },
+            {
+              id: "rejected",
+              value: STATUS_CODES.REJECTED,
+              label: STATUS_LABELS[STATUS_CODES.REJECTED],
+            },
           ].map(({ id, value, label }) => (
-            <button 
+            <button
               key={id}
               onClick={() => setStatusFilter(value as StatusCode)}
               className={`py-2 px-4 rounded-lg text-white text-sm md:text-base transition-colors ${
                 statusFilter === value
-                  ? value === STATUS_CODES.APPROVED ? 'bg-green-600' : 
-                    value === STATUS_CODES.PENDING ? 'bg-yellow-600' : 
-                    value === STATUS_CODES.REJECTED ? 'bg-red-600' : 'bg-purple-600'
-                  : 'bg-[#252547] border border-purple-500/20 hover:bg-[#2f2f5a]'
+                  ? value === STATUS_CODES.APPROVED
+                    ? "bg-green-600"
+                    : value === STATUS_CODES.PENDING
+                    ? "bg-yellow-600"
+                    : value === STATUS_CODES.REJECTED
+                    ? "bg-red-600"
+                    : "bg-purple-600"
+                  : "bg-[#252547] border border-purple-500/20 hover:bg-[#2f2f5a]"
               }`}
             >
               {label}
@@ -617,36 +798,68 @@ const Withdrawals = () => {
                   </thead>
                   <tbody>
                     {withdrawals.map((withdrawal) => (
-                      <tr key={withdrawal.withdrawalId} className="border-b border-[#1e1e3f] hover:bg-[#2f2f5a]">
-                        <td className="px-6 py-4">#{withdrawal.withdrawalId}</td>
+                      <tr
+                        key={withdrawal.withdrawalId}
+                        className="border-b border-[#1e1e3f] hover:bg-[#2f2f5a]"
+                      >
+                        <td className="px-6 py-4">
+                          #{withdrawal.withdrawalId}
+                        </td>
                         <td className="px-6 py-4">
                           {formatUserInfo(withdrawal.user)}
                         </td>
                         <td className="px-6 py-4">
-                          {formatAmount(withdrawal.amount, withdrawal.cryptoname)}
+                          {formatAmount(
+                            withdrawal.amount,
+                            withdrawal.cryptoname,
+                            conversionRate?.rate
+                          )}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`font-medium uppercase ${getMethodColor('walletAddress' in withdrawal.withdrawalDetails ? 'Crypto' : 'Bank Transfer')}`}>
-                            {'walletAddress' in withdrawal.withdrawalDetails ? 'CRYPTO' : 'BANK TRANSFER'}
+                          <span
+                            className={`font-medium uppercase ${getMethodColor(
+                              "walletAddress" in withdrawal.withdrawalDetails
+                                ? "Crypto"
+                                : "Bank Transfer"
+                            )}`}
+                          >
+                            {"walletAddress" in withdrawal.withdrawalDetails
+                              ? "CRYPTO"
+                              : "BANK TRANSFER"}
                           </span>
                         </td>
                         <td className="px-6 py-4">
                           {formatAccountDetails(withdrawal.withdrawalDetails)}
                         </td>
                         <td className="px-6 py-4">
-                          {withdrawal.requestDate ? formatDate(withdrawal.requestDate) : 'N/A'}
+                          {withdrawal.requestDate
+                            ? formatDate(withdrawal.requestDate)
+                            : "N/A"}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`font-medium ${getStatusColor(withdrawal.withdrawalStatus.code)}`}>
-                            {STATUS_LABELS[withdrawal.withdrawalStatus.code as StatusCode]}
+                          <span
+                            className={`font-medium ${getStatusColor(
+                              withdrawal.withdrawalStatus.code
+                            )}`}
+                          >
+                            {
+                              STATUS_LABELS[
+                                withdrawal.withdrawalStatus.code as StatusCode
+                              ]
+                            }
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          {withdrawal.withdrawalStatus.code === STATUS_CODES.PENDING && (
+                          {withdrawal.withdrawalStatus.code ===
+                            STATUS_CODES.PENDING && (
                             <div className="flex gap-2">
                               <button
-                                onClick={() => handleOpenCommentModal(withdrawal, 'approve')}
-                                disabled={processingId === withdrawal.withdrawalId}
+                                onClick={() =>
+                                  handleOpenCommentModal(withdrawal, "approve")
+                                }
+                                disabled={
+                                  processingId === withdrawal.withdrawalId
+                                }
                                 className="p-1.5 bg-green-500/20 text-green-400 rounded hover:bg-green-500/30 transition-colors disabled:opacity-50"
                                 title="Approve withdrawal"
                               >
@@ -657,8 +870,12 @@ const Withdrawals = () => {
                                 )}
                               </button>
                               <button
-                                onClick={() => handleOpenCommentModal(withdrawal, 'reject')}
-                                disabled={processingId === withdrawal.withdrawalId}
+                                onClick={() =>
+                                  handleOpenCommentModal(withdrawal, "reject")
+                                }
+                                disabled={
+                                  processingId === withdrawal.withdrawalId
+                                }
                                 className="p-1.5 bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 transition-colors disabled:opacity-50"
                                 title="Reject withdrawal"
                               >
