@@ -166,7 +166,7 @@ const Dashboard = () => {
               <div>
                 <p className="text-gray-400 mb-1">Total Users</p>
                 <h2 className="text-3xl font-bold text-white">{totalUsers?.toLocaleString()}</h2>
-                <p className="text-green-400 text-sm mt-2">+124 this week</p>
+                
               </div>
               <div className="p-3 bg-purple-500/20 rounded-xl">
                 <Users className="w-8 h-8 text-purple-400" />
@@ -189,7 +189,7 @@ const Dashboard = () => {
               <div>
                 <p className="text-gray-400 mb-1">Total Transactions</p>
                 <h2 className="text-3xl font-bold text-white">{totalTransactions}</h2>
-                <p className="text-green-400 text-sm mt-2">+₹0 this week</p>
+               
               </div>
               <div className="p-3 bg-green-500/20 rounded-xl">
                 <IndianRupeeIcon className="w-8 h-8 text-green-400" />
