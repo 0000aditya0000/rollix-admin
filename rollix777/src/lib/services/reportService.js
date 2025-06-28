@@ -2,10 +2,10 @@ import axios from "axios";
 
 import { baseUrl } from "../config/server";
 
-export const getColorReport = async (periodnumber) => {
+export const getColorReport = async (periodnumber, duration) => {
   try {
     const response = await axios.get(
-      `${baseUrl}/api/color/color-bet-report/${periodnumber}`,
+      `${baseUrl}/api/color/color-bet-report/${periodnumber}?duration=${duration}min`,
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,

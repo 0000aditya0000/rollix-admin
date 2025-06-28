@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   BarChart3,
   LineChart,
@@ -57,6 +57,22 @@ interface Statistics {
   bet_distribution: BetDistribution;
 }
 
+interface GameStat {
+  gameId: string;
+  total_bets: number;
+  total_bet_amount: number;
+  total_win_amount: number;
+}
+
+interface OtherGameStats {
+  total_turnover_bets: number;
+  total_turnover_amount: number;
+  total_turnover_wins: number;
+  total_turnover_win_amount: number;
+  turnover_profit_loss: number;
+  game_distribution: GameStat[];
+}
+
 interface RecentBet {
   period_number: number;
   bet_type: string;
@@ -65,12 +81,22 @@ interface RecentBet {
   winnings: number;
   result: "won" | "lost";
   placed_at: string;
+  data: [];
+}
+
+interface RecentBetsResponse {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  data: RecentBet[];
 }
 
 interface UserReport {
   success: boolean;
   statistics: Statistics;
-  recent_bets: RecentBet[];
+  recent_bets: RecentBetsResponse;
+  other_game_stats: OtherGameStats;
 }
 
 const Reports = () => {
@@ -90,6 +116,10 @@ const Reports = () => {
     useState<TransactionReport | null>(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [duration, setDuration] = useState(1);
+  const [activeTab, setActiveTab] = useState("wingo");
+
+  const durationsVal = [1, 3, 5, 10];
 
   const fetchGameData = async () => {
     if (!periodNumber) {
@@ -100,7 +130,7 @@ const Reports = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await getColorReport(periodNumber);
+      const response = await getColorReport(periodNumber, duration);
       if (response.success) {
         setGameData(response);
       } else {
@@ -148,13 +178,12 @@ const Reports = () => {
   };
 
   useEffect(() => {
-    fetchTransactionReport();
     fetchUserReport();
   }, []);
 
-  const handleRefresh = () => {
-    fetchGameData();
-  };
+  // const handleRefresh = () => {
+  //   fetchGameData();
+  // };
 
   return (
     <div className="space-y-6">
@@ -245,6 +274,21 @@ const Reports = () => {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-bold text-white">WINGO Report</h2>
             <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                {durationsVal.map((value) => (
+                  <button
+                    key={value}
+                    onClick={() => setDuration(value)}
+                    className={`px-3 py-1 rounded-md text-sm font-medium border ${
+                      duration === value
+                        ? "bg-purple-600 text-white border-purple-600"
+                        : "bg-transparent text-gray-300 border-purple-500/30 hover:border-purple-500"
+                    } transition-all`}
+                  >
+                    {value} min
+                  </button>
+                ))}
+              </div>
               <div className="relative">
                 <input
                   type="text"
@@ -303,37 +347,39 @@ const Reports = () => {
           ) : gameData ? (
             <div className="space-y-6">
               {/* Period and Result */}
-              <div className="grid grid-cols-3 gap-4">
-                <div className="bg-[#1A1A2E] p-4 rounded-lg border border-purple-500/10">
-                  <p className="text-gray-400 text-sm mb-1">Period Number</p>
-                  <p className="text-white text-xl font-bold">
-                    #{gameData.period_number}
-                  </p>
-                </div>
-                <div className="bg-[#1A1A2E] p-4 rounded-lg border border-purple-500/10">
-                  <p className="text-gray-400 text-sm mb-1">Winning Number</p>
-                  <p className="text-white text-xl font-bold">
-                    {gameData.result.winning_number}
-                  </p>
-                </div>
-                <div className="bg-[#1A1A2E] p-4 rounded-lg border border-purple-500/10">
-                  <p className="text-gray-400 text-sm mb-1">Winning Color</p>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={`w-3 h-3 rounded-full ${
-                        gameData.result.winning_color === "red"
-                          ? "bg-red-500"
-                          : gameData.result.winning_color === "green"
-                          ? "bg-green-500"
-                          : "bg-purple-500"
-                      }`}
-                    />
-                    <p className="text-white text-xl font-bold capitalize">
-                      {gameData.result.winning_color}
+              {gameData && (
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-[#1A1A2E] p-4 rounded-lg border border-purple-500/10">
+                    <p className="text-gray-400 text-sm mb-1">Period Number</p>
+                    <p className="text-white text-xl font-bold">
+                      #{gameData.period_number}
                     </p>
                   </div>
+                  <div className="bg-[#1A1A2E] p-4 rounded-lg border border-purple-500/10">
+                    <p className="text-gray-400 text-sm mb-1">Winning Number</p>
+                    <p className="text-white text-xl font-bold">
+                      {gameData?.result?.winning_number}
+                    </p>
+                  </div>
+                  <div className="bg-[#1A1A2E] p-4 rounded-lg border border-purple-500/10">
+                    <p className="text-gray-400 text-sm mb-1">Winning Color</p>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`w-3 h-3 rounded-full ${
+                          gameData.result?.winning_color === "red"
+                            ? "bg-red-500"
+                            : gameData.result?.winning_color === "green"
+                            ? "bg-green-500"
+                            : "bg-purple-500"
+                        }`}
+                      />
+                      <p className="text-white text-xl font-bold capitalize">
+                        {gameData.result?.winning_color}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Color Bets */}
               <div className="grid grid-cols-3 gap-4">
@@ -341,7 +387,7 @@ const Reports = () => {
                   <div
                     key={color}
                     className={`bg-[#1A1A2E] p-4 rounded-lg border ${
-                      color === gameData.result.winning_color
+                      color === gameData.result?.winning_color
                         ? "border-green-500/50 bg-green-500/5"
                         : "border-purple-500/10"
                     }`}
@@ -564,66 +610,139 @@ const Reports = () => {
               {/* Recent Bets Table */}
               <div className="bg-[#1A1A2E] p-4 rounded-lg border border-purple-500/10">
                 <h3 className="text-white font-medium mb-3">Recent Bets</h3>
+                <div className="flex gap-4 mb-4">
+                  <button
+                    onClick={() => setActiveTab("wingo")}
+                    className={`px-4 py-2 rounded-md font-medium text-sm transition-all ${
+                      activeTab === "wingo"
+                        ? "bg-purple-600 text-white"
+                        : "bg-transparent text-gray-400 border border-purple-500/30"
+                    }`}
+                  >
+                    Wingo
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("other")}
+                    className={`px-4 py-2 rounded-md font-medium text-sm transition-all ${
+                      activeTab === "other"
+                        ? "bg-purple-600 text-white"
+                        : "bg-transparent text-gray-400 border border-purple-500/30"
+                    }`}
+                  >
+                    Other Games
+                  </button>
+                </div>
                 <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="text-left text-gray-400 text-sm">
-                        <th className="pb-3">Period</th>
-                        <th className="pb-3">Type</th>
-                        <th className="pb-3">Value</th>
-                        <th className="pb-3">Amount</th>
-                        <th className="pb-3">Winnings</th>
-                        <th className="pb-3">Result</th>
-                        <th className="pb-3">Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {userReport?.recent_bets &&
-                      userReport.recent_bets.length > 0 ? (
-                        userReport.recent_bets.map((bet, index) => (
-                          <tr
-                            key={index}
-                            className="border-t border-purple-500/10"
-                          >
-                            <td className="py-3 text-white">
-                              #{bet.period_number}
-                            </td>
-                            <td className="py-3 text-white capitalize">
-                              {bet.bet_type}
-                            </td>
-                            <td className="py-3 text-white capitalize">
-                              {bet.bet_value}
-                            </td>
-                            <td className="py-3 text-white">₹{bet.amount}</td>
-                            <td className="py-3 text-white">₹{bet.winnings}</td>
-                            <td className="py-3">
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs ${
-                                  bet.result === "won"
-                                    ? "bg-green-500/20 text-green-500"
-                                    : "bg-red-500/20 text-red-500"
-                                }`}
-                              >
-                                {bet.result}
-                              </span>
-                            </td>
-                            <td className="py-3 text-gray-400">
-                              {new Date(bet.placed_at).toLocaleString()}
+                  {activeTab === "wingo" ? (
+                    <table className="w-full">
+                      <thead>
+                        <tr className="text-left text-gray-400 text-sm">
+                          <th className="px-6 pb-3">Period</th>
+                          <th className="px-6 pb-3">Type</th>
+                          <th className="px-6 pb-3">Value</th>
+                          <th className="px-6 pb-3">Amount</th>
+                          <th className="px-6 pb-3">Winnings</th>
+                          <th className="px-6 pb-3">Result</th>
+                          <th className="px-6 pb-3">Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {userReport?.recent_bets?.data?.length > 0 ? (
+                          userReport.recent_bets.data.map((bet, index) => (
+                            <tr
+                              key={index}
+                              className="border-t border-purple-500/10"
+                            >
+                              <td className="py-4 px-6 text-white">
+                                #{bet.period_number}
+                              </td>
+                              <td className="py-4 px-6 text-white capitalize">
+                                {bet.bet_type}
+                              </td>
+                              <td className="py-4 px-4 text-white capitalize">
+                                {bet.bet_value}
+                              </td>
+                              <td className="py-4 px-6 text-white">
+                                ₹ {bet.amount}
+                              </td>
+                              <td className="py-4 px-6 text-white">
+                                ₹ {bet.winnings}
+                              </td>
+                              <td className="py-3">
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs ${
+                                    bet.result === "won"
+                                      ? "bg-green-500/20 text-green-500"
+                                      : "bg-red-500/20 text-red-500"
+                                  }`}
+                                >
+                                  {bet.result}
+                                </span>
+                              </td>
+                              <td className="py-3 text-gray-400">
+                                {new Date(bet.placed_at).toLocaleString()}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan={7}
+                              className="py-4 text-center text-gray-400"
+                            >
+                              No recent bets found
                             </td>
                           </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td
-                            colSpan={7}
-                            className="py-4 text-center text-gray-400"
-                          >
-                            No recent bets found
-                          </td>
+                        )}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <table className="w-full">
+                      <thead>
+                        <tr className="text-left text-gray-400 text-sm border-b border-purple-500/10">
+                          <th className="px-6 pb-3">No.</th>
+                          <th className="px-6 pb-3">Game ID</th>
+                          <th className="px-6 pb-3">Amount</th>
+                          <th className="px-6 pb-3">Winning Amount</th>
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {userReport?.other_game_stats?.game_distribution
+                          ?.length > 0 ? (
+                          userReport.other_game_stats.game_distribution.map(
+                            (game, index) => (
+                              <tr
+                                key={index}
+                                className="border-t border-purple-500/10"
+                              >
+                                <td className="py-4 px-6 text-white">
+                                  {index + 1}
+                                </td>
+                                <td className="py-4 px-6 text-white">
+                                  {game.gameId}
+                                </td>
+                                <td className="py-4 px-6 text-white">
+                                  ₹ {game.total_bet_amount}
+                                </td>
+                                <td className="py-4 px-6 text-white">
+                                  ₹ {game.total_win_amount}
+                                </td>
+                              </tr>
+                            )
+                          )
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan={7}
+                              className="py-4 text-center text-gray-400"
+                            >
+                              No game stats found
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               </div>
             </div>
