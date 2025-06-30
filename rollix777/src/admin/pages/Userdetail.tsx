@@ -57,6 +57,8 @@ interface UserData {
     image: string;
     my_referral_code: string;
     referred_by: string | null;
+    aadhar_front: string;
+    aadhar_back: string;
   };
   wallet: WalletBalance[];
   bankAccounts: any[];
@@ -130,20 +132,20 @@ const Userdetail = () => {
     switch (status) {
       case 0:
         return (
-          <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm">
-            Not Verified
+          <span className="px-3 py-1 bg-red-500/20 text-yellow-400 rounded-full text-sm">
+            Pending
           </span>
         );
       case 1:
         return (
-          <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-sm">
-            Pending
+          <span className="px-3 py-1 bg-yellow-500/20 text-green-400 rounded-full text-sm">
+            Approved
           </span>
         );
       case 2:
         return (
-          <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
-            Verified
+          <span className="px-3 py-1 bg-green-500/20 text-red-400 rounded-full text-sm">
+            Rejected
           </span>
         );
       default:
@@ -366,28 +368,74 @@ const Userdetail = () => {
                 </h2>
               </div>
               <div className="space-y-3 md:space-y-4">
+                {/* Aadhar Card Section */}
                 <div className="p-3 md:p-4 bg-[#1A1A2E] rounded-xl">
                   <p className="text-gray-400 text-xs md:text-sm mb-1 md:mb-2">
                     Aadhar Card
                   </p>
-                  <p className="text-white font-medium text-sm md:text-base">
-                    {userData?.kyc.aadhar || "Not Provided"}
-                  </p>
+
+                  <div className="text-sm text-white space-y-1">
+                    <div>
+                      <span className="font-medium">Front:</span>{" "}
+                      {userData.user.aadhar_front ? (
+                        <a
+                          href={userData.user.aadhar_front}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-purple-400 underline hover:text-purple-300"
+                        >
+                          View
+                        </a>
+                      ) : (
+                        <span className="text-gray-400">Not Provided</span>
+                      )}
+                    </div>
+                    <div>
+                      <span className="font-medium">Back:</span>{" "}
+                      {userData.user.aadhar_back ? (
+                        <a
+                          href={userData.user.aadhar_back}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-purple-400 underline hover:text-purple-300"
+                        >
+                          View
+                        </a>
+                      ) : (
+                        <span className="text-gray-400">Not Provided</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
+
+                {/* PAN Card Section */}
                 <div className="p-3 md:p-4 bg-[#1A1A2E] rounded-xl">
                   <p className="text-gray-400 text-xs md:text-sm mb-1 md:mb-2">
                     PAN Card
                   </p>
-                  <p className="text-white font-medium text-sm md:text-base">
-                    {userData?.kyc.pan || "Not Provided"}
-                  </p>
+                  {userData.user.pan ? (
+                    <a
+                      href={userData.user.pan}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-purple-400 underline text-sm md:text-base hover:text-purple-300"
+                    >
+                      View PAN
+                    </a>
+                  ) : (
+                    <p className="text-white font-medium text-sm md:text-base">
+                      Not Provided
+                    </p>
+                  )}
                 </div>
+
+                {/* KYC Status Section */}
                 <div className="p-3 md:p-4 bg-[#1A1A2E] rounded-xl">
                   <p className="text-gray-400 text-xs md:text-sm mb-1 md:mb-2">
                     KYC Status
                   </p>
-                  <div className="text-white font-medium text-sm md:text-base">
-                    {getKycStatusBadge(userData?.kyc.status || 0)}
+                  <div className="text-sm md:text-base font-semibold">
+                    {getKycStatusBadge(userData.user.kycstatus || 0)}
                   </div>
                 </div>
               </div>

@@ -1,10 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Check, X, Loader2, AlertCircle, ChevronLeft, ChevronRight, Eye, Edit2, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
-import axios from 'axios';
-import { baseUrl } from '../../lib/config/server';
-import { toast } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
-
+import React, { useState, useEffect } from "react";
+import {
+  Search,
+  Check,
+  X,
+  Loader2,
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Edit2,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import axios from "axios";
+import { baseUrl } from "../../lib/config/server";
+import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 interface User {
   name: string | null;
@@ -31,7 +43,7 @@ interface Account {
   userId: number;
   status: number;
   user: User;
-  accountType: 'bank' | 'crypto';
+  accountType: "bank" | "crypto";
   bankDetails?: BankDetails;
   cryptoDetails?: CryptoDetails;
 }
@@ -51,7 +63,7 @@ interface ApiResponse {
 
 interface SortConfig {
   key: string;
-  direction: 'asc' | 'desc';
+  direction: "asc" | "desc";
 }
 
 const statusMap = {
@@ -75,11 +87,11 @@ const getStatusColor = (status: number) => {
 
 const getTypeColor = (type: string | undefined) => {
   if (!type) return "text-gray-400";
-  
+
   switch (type.toLowerCase()) {
-    case 'bank':
+    case "bank":
       return "text-blue-400";
-    case 'crypto':
+    case "crypto":
       return "text-purple-400";
     default:
       return "text-gray-400";
@@ -106,15 +118,18 @@ const BankAccounts = () => {
     currentPage: 1,
     totalPages: 1,
     totalRecords: 0,
-    limit: 20
+    limit: 20,
   });
   const [loading, setLoading] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'desc' });
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: "id",
+    direction: "desc",
+  });
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
-  const [comment, setComment] = useState('');
+  const [comment, setComment] = useState("");
 
   const fetchAccounts = async (page: number = 1) => {
     try {
@@ -144,32 +159,38 @@ const BankAccounts = () => {
   const handleUpdateStatus = async (accountId: number, newStatus: number) => {
     try {
       setUpdatingStatus(true);
-      const response = await axios.put(`${baseUrl}/api/bankaccount/update-status/${accountId}`, {
-        status: newStatus,
-        note: comment
-      });
+      const response = await axios.put(
+        `${baseUrl}/api/bankaccount/update-status/${accountId}`,
+        {
+          status: newStatus,
+          note: comment,
+        }
+      );
 
       if (response.data.success) {
-        const actionMessage = newStatus === 1 
-          ? "Bank account approved successfully"
-          : "Bank account rejected successfully";
+        const actionMessage =
+          newStatus === 1
+            ? "Bank account approved successfully"
+            : "Bank account rejected successfully";
         toast.success(actionMessage);
         setIsViewModalOpen(false);
         setSelectedAccount(null);
-        setComment('');
+        setComment("");
         // Refresh the list with current filters
         fetchAccounts(pagination.currentPage);
       } else {
-        const errorMessage = newStatus === 1 
-          ? "Failed to approve bank account"
-          : "Failed to reject bank account";
+        const errorMessage =
+          newStatus === 1
+            ? "Failed to approve bank account"
+            : "Failed to reject bank account";
         toast.error(errorMessage);
       }
     } catch (error: any) {
       console.error("Failed to update status", error);
-      const errorMessage = newStatus === 1 
-        ? "Failed to approve bank account"
-        : "Failed to reject bank account";
+      const errorMessage =
+        newStatus === 1
+          ? "Failed to approve bank account"
+          : "Failed to reject bank account";
       toast.error(error.response?.data?.message || errorMessage);
     } finally {
       setUpdatingStatus(false);
@@ -186,13 +207,17 @@ const BankAccounts = () => {
           </div>
           <div>
             <p className="text-gray-400">Status</p>
-            <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(account.status)}`}>
+            <span
+              className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
+                account.status
+              )}`}
+            >
               {statusMap[account.status as keyof typeof statusMap]}
             </span>
           </div>
         </div>
 
-        {account.accountType === 'bank' && account.bankDetails && (
+        {account.accountType === "bank" && account.bankDetails && (
           <div className="space-y-3">
             <h4 className="text-lg font-medium text-white">Bank Details</h4>
             <div className="grid grid-cols-2 gap-4">
@@ -202,7 +227,9 @@ const BankAccounts = () => {
               </div>
               <div>
                 <p className="text-gray-400">Account Number</p>
-                <p className="text-white">{account.bankDetails.accountNumber}</p>
+                <p className="text-white">
+                  {account.bankDetails.accountNumber}
+                </p>
               </div>
               <div>
                 <p className="text-gray-400">IFSC Code</p>
@@ -216,13 +243,15 @@ const BankAccounts = () => {
           </div>
         )}
 
-        {account.accountType === 'crypto' && account.cryptoDetails && (
+        {account.accountType === "crypto" && account.cryptoDetails && (
           <div className="space-y-3">
             <h4 className="text-lg font-medium text-white">Crypto Details</h4>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-gray-400">USDT Address</p>
-                <p className="text-white break-all">{account.cryptoDetails.usdtAddress}</p>
+                <p className="text-white break-all">
+                  {account.cryptoDetails.usdtAddress}
+                </p>
               </div>
               <div>
                 <p className="text-gray-400">Network</p>
@@ -257,7 +286,9 @@ const BankAccounts = () => {
         {/* Add Comments Section */}
         <div className="space-y-3 pt-4 border-t border-purple-500/20">
           <div className="space-y-1.5">
-            <label htmlFor="comment" className="text-gray-400 text-sm">Comments</label>
+            <label htmlFor="comment" className="text-gray-400 text-sm">
+              Comments
+            </label>
             <textarea
               id="comment"
               value={comment}
@@ -282,7 +313,7 @@ const BankAccounts = () => {
                   <span>Approving...</span>
                 </div>
               ) : (
-                'Approve'
+                "Approve"
               )}
             </button>
             <button
@@ -296,7 +327,7 @@ const BankAccounts = () => {
                   <span>Rejecting...</span>
                 </div>
               ) : (
-                'Reject'
+                "Reject"
               )}
             </button>
           </div>
@@ -314,19 +345,19 @@ const BankAccounts = () => {
       let bValue: any = b[sortConfig.key as keyof Account];
 
       // Handle nested properties
-      if (sortConfig.key === 'name') {
-        aValue = a.user?.name || '';
-        bValue = b.user?.name || '';
-      } else if (sortConfig.key === 'mobile') {
-        aValue = a.user?.mobile || '';
-        bValue = b.user?.mobile || '';
-      } else if (sortConfig.key === 'email') {
-        aValue = a.user?.email || '';
-        bValue = b.user?.email || '';
+      if (sortConfig.key === "name") {
+        aValue = a.user?.name || "";
+        bValue = b.user?.name || "";
+      } else if (sortConfig.key === "mobile") {
+        aValue = a.user?.mobile || "";
+        bValue = b.user?.mobile || "";
+      } else if (sortConfig.key === "email") {
+        aValue = a.user?.email || "";
+        bValue = b.user?.email || "";
       }
 
-      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
       return 0;
     });
   };
@@ -334,7 +365,10 @@ const BankAccounts = () => {
   const handleSort = (key: string) => {
     setSortConfig((prevConfig) => ({
       key,
-      direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc',
+      direction:
+        prevConfig.key === key && prevConfig.direction === "asc"
+          ? "desc"
+          : "asc",
     }));
   };
 
@@ -344,8 +378,10 @@ const BankAccounts = () => {
   return (
     <div className="p-1   sm:p-6 w-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white">Bank Accounts</h1>
-        
+        <h1 className="text-2xl sm:text-3xl font-bold text-white">
+          Bank Accounts
+        </h1>
+
         {/* Filter Tabs */}
         <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
           {[
@@ -358,7 +394,9 @@ const BankAccounts = () => {
               key={item.label}
               onClick={() => setStatusFilter(item.value)}
               data-active={statusFilter === item.value}
-              className={`py-2 px-4 rounded-lg text-white text-sm border transition-all duration-200 flex-1 sm:flex-none ${getFilterStyle(item.value)}`}
+              className={`py-2 px-4 rounded-lg text-white text-sm border transition-all duration-200 flex-1 sm:flex-none ${getFilterStyle(
+                item.value
+              )}`}
             >
               {item.label}
             </button>
@@ -373,71 +411,89 @@ const BankAccounts = () => {
           <table className="w-full">
             <thead>
               <tr className="text-left text-gray-400 text-sm border-b border-purple-500/10">
-                <th 
+                <th
                   className="py-4 px-6 font-medium cursor-pointer hover:text-white transition-colors"
-                  onClick={() => handleSort('id')}
+                  onClick={() => handleSort("userId")}
                 >
                   <div className="flex items-center gap-2">
-                    ID
-                    {sortConfig.key === 'id' && (
-                      sortConfig.direction === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />
-                    )}
+                    User ID
+                    {sortConfig.key === "userId" &&
+                      (sortConfig.direction === "asc" ? (
+                        <ChevronUp size={16} />
+                      ) : (
+                        <ChevronDown size={16} />
+                      ))}
                   </div>
                 </th>
-                <th 
+                <th
                   className="py-4 px-6 font-medium cursor-pointer hover:text-white transition-colors"
-                  onClick={() => handleSort('name')}
+                  onClick={() => handleSort("name")}
                 >
                   <div className="flex items-center gap-2">
                     Name
-                    {sortConfig.key === 'name' && (
-                      sortConfig.direction === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />
-                    )}
+                    {sortConfig.key === "name" &&
+                      (sortConfig.direction === "asc" ? (
+                        <ChevronUp size={16} />
+                      ) : (
+                        <ChevronDown size={16} />
+                      ))}
                   </div>
                 </th>
-                <th 
+                <th
                   className="py-4 px-6 font-medium cursor-pointer hover:text-white transition-colors"
-                  onClick={() => handleSort('mobile')}
+                  onClick={() => handleSort("mobile")}
                 >
                   <div className="flex items-center gap-2">
                     Mobile
-                    {sortConfig.key === 'mobile' && (
-                      sortConfig.direction === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />
-                    )}
+                    {sortConfig.key === "mobile" &&
+                      (sortConfig.direction === "asc" ? (
+                        <ChevronUp size={16} />
+                      ) : (
+                        <ChevronDown size={16} />
+                      ))}
                   </div>
                 </th>
-                <th 
+                <th
                   className="py-4 px-6 font-medium cursor-pointer hover:text-white transition-colors"
-                  onClick={() => handleSort('email')}
+                  onClick={() => handleSort("email")}
                 >
                   <div className="flex items-center gap-2">
                     Email
-                    {sortConfig.key === 'email' && (
-                      sortConfig.direction === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />
-                    )}
+                    {sortConfig.key === "email" &&
+                      (sortConfig.direction === "asc" ? (
+                        <ChevronUp size={16} />
+                      ) : (
+                        <ChevronDown size={16} />
+                      ))}
                   </div>
                 </th>
-                <th 
+                <th
                   className="py-4 px-6 font-medium cursor-pointer hover:text-white transition-colors"
-                  onClick={() => handleSort('accountType')}
+                  onClick={() => handleSort("accountType")}
                 >
                   <div className="flex items-center gap-2">
                     Type
-                    {sortConfig.key === 'accountType' && (
-                      sortConfig.direction === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />
-                    )}
+                    {sortConfig.key === "accountType" &&
+                      (sortConfig.direction === "asc" ? (
+                        <ChevronUp size={16} />
+                      ) : (
+                        <ChevronDown size={16} />
+                      ))}
                   </div>
                 </th>
                 <th className="py-4 px-6 font-medium">Account Details</th>
-                <th 
+                <th
                   className="py-4 px-6 font-medium cursor-pointer hover:text-white transition-colors"
-                  onClick={() => handleSort('status')}
+                  onClick={() => handleSort("status")}
                 >
                   <div className="flex items-center gap-2">
                     Status
-                    {sortConfig.key === 'status' && (
-                      sortConfig.direction === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />
-                    )}
+                    {sortConfig.key === "status" &&
+                      (sortConfig.direction === "asc" ? (
+                        <ChevronUp size={16} />
+                      ) : (
+                        <ChevronDown size={16} />
+                      ))}
                   </div>
                 </th>
                 <th className="py-4 px-6 font-medium">Action</th>
@@ -447,25 +503,29 @@ const BankAccounts = () => {
               {sortedAccounts.map((account) => (
                 <tr
                   key={account.id}
-                  onMouseEnter={() => setHoveredRow(account.id)}
+                  onMouseEnter={() => setHoveredRow(account.userId)}
                   onMouseLeave={() => setHoveredRow(null)}
                   className={`border-b border-purple-500/10 text-white transition-colors ${
-                    hoveredRow === account.id ? 'bg-purple-500/5' : ''
+                    hoveredRow === account.userId ? "bg-purple-500/5" : ""
                   }`}
                 >
                   <td className="py-4 px-6">
-                    <span className="font-medium">#{account.id}</span>
+                    <span className="font-medium">#{account.userId}</span>
                   </td>
                   <td className="py-4 px-6">{account.user?.name || "N/A"}</td>
                   <td className="py-4 px-6">{account.user?.mobile || "N/A"}</td>
                   <td className="py-4 px-6">{account.user?.email || "N/A"}</td>
                   <td className="py-4 px-6">
-                    <span className={`px-3 py-1 rounded-full text-sm ${getTypeColor(account.accountType)} bg-opacity-20 capitalize`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm ${getTypeColor(
+                        account.accountType
+                      )} bg-opacity-20 capitalize`}
+                    >
                       {account.accountType}
                     </span>
                   </td>
                   <td className="py-4 px-6">
-                    {account.accountType === 'bank' ? (
+                    {account.accountType === "bank" ? (
                       <span className="text-sm font-medium">
                         {account.bankDetails?.accountNumber}
                       </span>
@@ -476,13 +536,18 @@ const BankAccounts = () => {
                     )}
                   </td>
                   <td className="py-4 px-6">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(account.status)}`}>
-                      {statusMap[account.status as keyof typeof statusMap] || "unknown"}
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                        account.status
+                      )}`}
+                    >
+                      {statusMap[account.status as keyof typeof statusMap] ||
+                        "unknown"}
                     </span>
                   </td>
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-2">
-                      <button 
+                      <button
                         onClick={() => {
                           setSelectedAccount(account);
                           setIsViewModalOpen(true);
@@ -493,14 +558,14 @@ const BankAccounts = () => {
                       </button>
                       {account.status === 0 && (
                         <>
-                          <button 
+                          <button
                             onClick={() => handleUpdateStatus(account.id, 1)}
                             disabled={updatingStatus}
                             className="p-1.5 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors disabled:opacity-50"
                           >
                             <Check size={16} />
                           </button>
-                          <button 
+                          <button
                             onClick={() => handleUpdateStatus(account.id, 2)}
                             disabled={updatingStatus}
                             className="p-1.5 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors disabled:opacity-50"
@@ -521,20 +586,27 @@ const BankAccounts = () => {
         <div className="md:hidden py-3 space-y-3">
           {accounts.map((account) => (
             <div
-              key={account.id}
+              key={account.userId}
               className="bg-[#1e1e3f]/50 rounded-xl p-4 hover:bg-[#1e1e3f] transition-colors border border-purple-500/20"
             >
               <div className="flex justify-between items-start mb-4">
                 <div className="space-y-1">
-                  <h3 className="text-white font-medium">{account.user?.name || "N/A"}</h3>
+                  <h3 className="text-white font-medium">
+                    {account.user?.name || "N/A"}
+                  </h3>
                   <div className="flex items-center gap-2">
-                    <p className="text-gray-400 text-sm">#{account.id}</p>
-                    <span className={`px-2 py-0.5 rounded-full text-xs ${getStatusColor(account.status)}`}>
-                      {statusMap[account.status as keyof typeof statusMap] || "unknown"}
+                    <p className="text-gray-400 text-sm">#{account.userId}</p>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-xs ${getStatusColor(
+                        account.status
+                      )}`}
+                    >
+                      {statusMap[account.status as keyof typeof statusMap] ||
+                        "unknown"}
                     </span>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => {
                     setSelectedAccount(account);
                     setIsViewModalOpen(true);
@@ -547,26 +619,40 @@ const BankAccounts = () => {
 
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="space-y-1.5">
-                  <p className="text-gray-400 text-xs uppercase tracking-wider">Type</p>
-                  <p className={`font-medium ${getTypeColor(account.accountType)} capitalize`}>
+                  <p className="text-gray-400 text-xs uppercase tracking-wider">
+                    Type
+                  </p>
+                  <p
+                    className={`font-medium ${getTypeColor(
+                      account.accountType
+                    )} capitalize`}
+                  >
                     {account.accountType}
                   </p>
                 </div>
                 <div className="space-y-1.5">
-                  <p className="text-gray-400 text-xs uppercase tracking-wider">Mobile</p>
+                  <p className="text-gray-400 text-xs uppercase tracking-wider">
+                    Mobile
+                  </p>
                   <p className="text-white">{account.user?.mobile || "N/A"}</p>
                 </div>
                 <div className="col-span-2 space-y-1.5">
-                  <p className="text-gray-400 text-xs uppercase tracking-wider">Account Details</p>
+                  <p className="text-gray-400 text-xs uppercase tracking-wider">
+                    Account Details
+                  </p>
                   <p className="text-white font-medium truncate">
-                    {account.accountType === 'bank' 
+                    {account.accountType === "bank"
                       ? account.bankDetails?.accountNumber
                       : account.cryptoDetails?.usdtAddress}
                   </p>
                 </div>
                 <div className="col-span-2 space-y-1.5">
-                  <p className="text-gray-400 text-xs uppercase tracking-wider">Email</p>
-                  <p className="text-white truncate">{account.user?.email || "N/A"}</p>
+                  <p className="text-gray-400 text-xs uppercase tracking-wider">
+                    Email
+                  </p>
+                  <p className="text-white truncate">
+                    {account.user?.email || "N/A"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -590,13 +676,22 @@ const BankAccounts = () => {
         {pagination?.totalPages > 1 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-purple-500/10">
             <div className="text-sm text-gray-400 order-2 sm:order-1">
-              Showing {((pagination?.currentPage || 1) - 1) * (pagination?.limit || 20) + 1} to{" "}
-              {Math.min((pagination?.currentPage || 1) * (pagination?.limit || 20), pagination?.totalRecords || 0)} of{" "}
-              {pagination?.totalRecords || 0} entries
+              Showing{" "}
+              {((pagination?.currentPage || 1) - 1) *
+                (pagination?.limit || 20) +
+                1}{" "}
+              to{" "}
+              {Math.min(
+                (pagination?.currentPage || 1) * (pagination?.limit || 20),
+                pagination?.totalRecords || 0
+              )}{" "}
+              of {pagination?.totalRecords || 0} entries
             </div>
             <div className="flex gap-2 order-1 sm:order-2">
               <button
-                onClick={() => handlePageChange((pagination?.currentPage || 1) - 1)}
+                onClick={() =>
+                  handlePageChange((pagination?.currentPage || 1) - 1)
+                }
                 disabled={pagination?.currentPage === 1}
                 className={`p-2 rounded-lg ${
                   pagination?.currentPage === 1
@@ -606,7 +701,10 @@ const BankAccounts = () => {
               >
                 <ChevronLeft size={16} />
               </button>
-              {Array.from({ length: pagination?.totalPages || 1 }, (_, i) => i + 1).map((page) => (
+              {Array.from(
+                { length: pagination?.totalPages || 1 },
+                (_, i) => i + 1
+              ).map((page) => (
                 <button
                   key={page}
                   onClick={() => handlePageChange(page)}
@@ -620,7 +718,9 @@ const BankAccounts = () => {
                 </button>
               ))}
               <button
-                onClick={() => handlePageChange((pagination?.currentPage || 1) + 1)}
+                onClick={() =>
+                  handlePageChange((pagination?.currentPage || 1) + 1)
+                }
                 disabled={pagination?.currentPage === pagination?.totalPages}
                 className={`p-2 rounded-lg ${
                   pagination?.currentPage === pagination?.totalPages
@@ -638,14 +738,16 @@ const BankAccounts = () => {
       {/* Details Modal */}
       {isViewModalOpen && selectedAccount && (
         <div className="fixed inset-0 z-50">
-          <div 
+          <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setIsViewModalOpen(false)}
           />
           <div className="relative w-full h-full sm:h-auto sm:flex sm:items-center sm:justify-center p-0 sm:p-4">
             <div className="relative bg-[#1A1A2E] w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-2xl sm:rounded-xl shadow-lg overflow-hidden">
               <div className="sticky top-0 z-10 bg-[#1A1A2E] border-b border-purple-500/20 p-4 flex items-center justify-between">
-                <h2 className="text-lg sm:text-xl font-semibold text-white">Account Details</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-white">
+                  Account Details
+                </h2>
                 <button
                   onClick={() => setIsViewModalOpen(false)}
                   className="p-1.5 hover:bg-purple-500/20 rounded-lg transition-colors"
@@ -653,73 +755,124 @@ const BankAccounts = () => {
                   <X className="text-gray-400" size={20} />
                 </button>
               </div>
-              
+
               <div className="overflow-y-auto h-[calc(100vh-64px)] sm:h-auto">
                 <div className="p-4 space-y-6">
                   {/* Status and Type */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <p className="text-gray-400 text-xs uppercase tracking-wider">Account Type</p>
-                      <p className={`text-base font-medium ${getTypeColor(selectedAccount.accountType)} capitalize`}>
+                      <p className="text-gray-400 text-xs uppercase tracking-wider">
+                        Account Type
+                      </p>
+                      <p
+                        className={`text-base font-medium ${getTypeColor(
+                          selectedAccount.accountType
+                        )} capitalize`}
+                      >
                         {selectedAccount.accountType}
                       </p>
                     </div>
                     <div className="space-y-1.5">
-                      <p className="text-gray-400 text-xs uppercase tracking-wider">Status</p>
-                      <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedAccount.status)}`}>
-                        {statusMap[selectedAccount.status as keyof typeof statusMap]}
+                      <p className="text-gray-400 text-xs uppercase tracking-wider">
+                        Status
+                      </p>
+                      <span
+                        className={`inline-block px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          selectedAccount.status
+                        )}`}
+                      >
+                        {
+                          statusMap[
+                            selectedAccount.status as keyof typeof statusMap
+                          ]
+                        }
                       </span>
                     </div>
                   </div>
 
                   {/* Account Details Section */}
-                  {selectedAccount.accountType === 'bank' && selectedAccount.bankDetails && (
-                    <div className="space-y-3 bg-purple-500/5 rounded-lg p-4">
-                      <h4 className="text-base font-medium text-purple-400">Bank Details</h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-1.5">
-                          <p className="text-gray-400 text-xs uppercase tracking-wider">Account Name</p>
-                          <p className="text-white text-sm break-words">{selectedAccount.bankDetails.accountName}</p>
-                        </div>
-                        <div className="space-y-1.5">
-                          <p className="text-gray-400 text-xs uppercase tracking-wider">Account Number</p>
-                          <p className="text-white text-sm font-medium">{selectedAccount.bankDetails.accountNumber}</p>
-                        </div>
-                        <div className="space-y-1.5">
-                          <p className="text-gray-400 text-xs uppercase tracking-wider">IFSC Code</p>
-                          <p className="text-white text-sm font-medium">{selectedAccount.bankDetails.ifscCode}</p>
-                        </div>
-                        <div className="space-y-1.5">
-                          <p className="text-gray-400 text-xs uppercase tracking-wider">Branch</p>
-                          <p className="text-white text-sm">{selectedAccount.bankDetails.branch}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Crypto Details Section */}
-                  {selectedAccount.accountType === 'crypto' && selectedAccount.cryptoDetails && (
-                    <div className="space-y-3 bg-purple-500/5 rounded-lg p-4">
-                      <h4 className="text-base font-medium text-purple-400">Crypto Details</h4>
-                      <div className="space-y-4">
-                        <div className="space-y-1.5">
-                          <p className="text-gray-400 text-xs uppercase tracking-wider">USDT Address</p>
-                          <div className="bg-[#1A1A2E] rounded p-3 break-all">
-                            <p className="text-white text-sm font-medium">{selectedAccount.cryptoDetails.usdtAddress}</p>
+                  {selectedAccount.accountType === "bank" &&
+                    selectedAccount.bankDetails && (
+                      <div className="space-y-3 bg-purple-500/5 rounded-lg p-4">
+                        <h4 className="text-base font-medium text-purple-400">
+                          Bank Details
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider">
+                              Account Name
+                            </p>
+                            <p className="text-white text-sm break-words">
+                              {selectedAccount.bankDetails.accountName}
+                            </p>
+                          </div>
+                          <div className="space-y-1.5">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider">
+                              Account Number
+                            </p>
+                            <p className="text-white text-sm font-medium">
+                              {selectedAccount.bankDetails.accountNumber}
+                            </p>
+                          </div>
+                          <div className="space-y-1.5">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider">
+                              IFSC Code
+                            </p>
+                            <p className="text-white text-sm font-medium">
+                              {selectedAccount.bankDetails.ifscCode}
+                            </p>
+                          </div>
+                          <div className="space-y-1.5">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider">
+                              Branch
+                            </p>
+                            <p className="text-white text-sm">
+                              {selectedAccount.bankDetails.branch}
+                            </p>
                           </div>
                         </div>
-                        <div className="space-y-1.5">
-                          <p className="text-gray-400 text-xs uppercase tracking-wider">Network</p>
-                          <p className="text-white text-sm font-medium">{selectedAccount.cryptoDetails.network}</p>
+                      </div>
+                    )}
+
+                  {/* Crypto Details Section */}
+                  {selectedAccount.accountType === "crypto" &&
+                    selectedAccount.cryptoDetails && (
+                      <div className="space-y-3 bg-purple-500/5 rounded-lg p-4">
+                        <h4 className="text-base font-medium text-purple-400">
+                          Crypto Details
+                        </h4>
+                        <div className="space-y-4">
+                          <div className="space-y-1.5">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider">
+                              USDT Address
+                            </p>
+                            <div className="bg-[#1A1A2E] rounded p-3 break-all">
+                              <p className="text-white text-sm font-medium">
+                                {selectedAccount.cryptoDetails.usdtAddress}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            <p className="text-gray-400 text-xs uppercase tracking-wider">
+                              Network
+                            </p>
+                            <p className="text-white text-sm font-medium">
+                              {selectedAccount.cryptoDetails.network}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
                   {/* Add Comments Section */}
                   <div className="space-y-3 pt-4 border-t border-purple-500/20">
                     <div className="space-y-1.5">
-                      <label htmlFor="comment" className="text-gray-400 text-sm">Comments</label>
+                      <label
+                        htmlFor="comment"
+                        className="text-gray-400 text-sm"
+                      >
+                        Comments
+                      </label>
                       <textarea
                         id="comment"
                         value={comment}
@@ -734,7 +887,9 @@ const BankAccounts = () => {
                   {selectedAccount.status === 0 && (
                     <div className="flex gap-3 pt-4 border-t border-purple-500/20">
                       <button
-                        onClick={() => handleUpdateStatus(selectedAccount.id, 1)}
+                        onClick={() =>
+                          handleUpdateStatus(selectedAccount.id, 1)
+                        }
                         disabled={updatingStatus}
                         className="flex-1 py-2.5 px-4 rounded-lg bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                       >
@@ -744,11 +899,13 @@ const BankAccounts = () => {
                             <span>Approving...</span>
                           </div>
                         ) : (
-                          'Approve'
+                          "Approve"
                         )}
                       </button>
                       <button
-                        onClick={() => handleUpdateStatus(selectedAccount.id, 2)}
+                        onClick={() =>
+                          handleUpdateStatus(selectedAccount.id, 2)
+                        }
                         disabled={updatingStatus}
                         className="flex-1 py-2.5 px-4 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                       >
@@ -758,7 +915,7 @@ const BankAccounts = () => {
                             <span>Rejecting...</span>
                           </div>
                         ) : (
-                          'Reject'
+                          "Reject"
                         )}
                       </button>
                     </div>
