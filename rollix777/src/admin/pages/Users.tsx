@@ -118,9 +118,7 @@ const Users = () => {
   }
 
   const handleFilter = () => {
-    const data = users.filter((user) =>
-      user.phone?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const data = users.filter((user) => user.id.toString() === searchTerm);
     setFilteredData(data);
   };
 
@@ -483,7 +481,10 @@ const Users = () => {
                   <td className="py-4 px-6">{"N/A"}</td>
                   <td className="py-4 px-6">
                     <div className="flex gap-2">
-                      <button className="p-1.5 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors">
+                      <button
+                        onClick={() => handleNameClick(user.id)}
+                        className="p-1.5 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors"
+                      >
                         <Eye size={16} />
                       </button>
                       <button
