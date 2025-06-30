@@ -1,10 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { 
-  User, Wallet, Users, Shield, Copy, Loader2, ArrowLeft, Mail, Phone, Calendar,
-  CreditCard, Building2, History, ChevronDown, ChevronUp, Building
-} from 'lucide-react';
-import { fetchUserAllData } from '../../lib/services/userService';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import {
+  User,
+  Wallet,
+  Users,
+  Shield,
+  Copy,
+  Loader2,
+  ArrowLeft,
+  Mail,
+  Phone,
+  Calendar,
+  CreditCard,
+  Building2,
+  History,
+  ChevronDown,
+  ChevronUp,
+  Building,
+} from "lucide-react";
+import { fetchUserAllData } from "../../lib/services/userService";
+import { useParams, useNavigate } from "react-router-dom";
 
 interface WalletBalance {
   id: number;
@@ -64,14 +78,14 @@ const Userdetail = () => {
   const [expandedSections, setExpandedSections] = useState({
     bankAccounts: false,
     referrals: false,
-    withdrawals: false
+    withdrawals: false,
   });
 
   useEffect(() => {
     const loadUserData = async () => {
       try {
         if (!userId) {
-          setError('User ID is required');
+          setError("User ID is required");
           return;
         }
         setLoading(true);
@@ -84,14 +98,18 @@ const Userdetail = () => {
             bankAccounts: response.data.bankAccounts,
             referrals: response.data.referrals,
             withdrawals: response.data.withdrawals,
-            kyc: response.data.kyc
+            kyc: response.data.kyc,
           };
           setUserData(userData);
         } else {
-          setError(response.message || 'Failed to fetch user data');
+          setError(response.message || "Failed to fetch user data");
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred while fetching user data');
+        setError(
+          err instanceof Error
+            ? err.message
+            : "An error occurred while fetching user data"
+        );
       } finally {
         setLoading(false);
       }
@@ -104,27 +122,45 @@ const Userdetail = () => {
     if (userData?.user.my_referral_code) {
       navigator.clipboard.writeText(userData.user.my_referral_code);
       // You could add a toast notification here
-      alert('Referral code copied');
+      alert("Referral code copied");
     }
   };
 
   const getKycStatusBadge = (status: number) => {
     switch (status) {
       case 0:
-        return <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm">Not Verified</span>;
+        return (
+          <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm">
+            Not Verified
+          </span>
+        );
       case 1:
-        return <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-sm">Pending</span>;
+        return (
+          <span className="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-sm">
+            Pending
+          </span>
+        );
       case 2:
-        return <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">Verified</span>;
+        return (
+          <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
+            Verified
+          </span>
+        );
       default:
-        return <span className="px-3 py-1 bg-gray-500/20 text-gray-400 rounded-full text-sm">Unknown</span>;
+        return (
+          <span className="px-3 py-1 bg-gray-500/20 text-gray-400 rounded-full text-sm">
+            Unknown
+          </span>
+        );
     }
   };
 
-  const toggleSection = (section: 'bankAccounts' | 'referrals' | 'withdrawals') => {
-    setExpandedSections(prev => ({
+  const toggleSection = (
+    section: "bankAccounts" | "referrals" | "withdrawals"
+  ) => {
+    setExpandedSections((prev) => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
   };
 
@@ -154,8 +190,12 @@ const Userdetail = () => {
     return (
       <div className="w-full h-[50vh] flex items-center justify-center">
         <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-6 max-w-md">
-          <h2 className="text-xl font-bold text-yellow-400 mb-2">No Data Found</h2>
-          <p className="text-gray-400">Could not find user data for the specified ID.</p>
+          <h2 className="text-xl font-bold text-yellow-400 mb-2">
+            No Data Found
+          </h2>
+          <p className="text-gray-400">
+            Could not find user data for the specified ID.
+          </p>
         </div>
       </div>
     );
@@ -165,11 +205,11 @@ const Userdetail = () => {
     <div className="w-full md:px-4 py-4 space-y-2 md:space-y-6">
       {/* Back Navigation Button */}
       <button
-        onClick={() => navigate('/admin/users')}
+        onClick={() => navigate("/admin/users")}
         className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4 md:mb-6"
       >
         <ArrowLeft className="w-5 h-5 font-bold text-pink-600" />
-        <span className='text-pink-600 font-bold'>Back</span>
+        <span className="text-pink-600 font-bold">Back</span>
       </button>
 
       {/* Profile Header - Responsive layout with stacked design on mobile */}
@@ -187,26 +227,32 @@ const Userdetail = () => {
             <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-4">
               <div>
                 <h1 className="text-xl md:text-2xl font-bold text-white">
-                  {userData?.user.name || userData?.user.username || 'N/A'}
+                  {userData?.user.name || userData?.user.username || "N/A"}
                 </h1>
                 <p className="text-gray-400">@{userData?.user.username}</p>
               </div>
               {getKycStatusBadge(userData?.kyc.status || 0)}
             </div>
-            
+
             {/* Contact Info - Stack on mobile, grid on desktop */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
               <div className="flex items-center justify-center md:justify-start gap-2">
                 <Mail className="w-4 h-4 text-purple-400" />
-                <span className="text-gray-400">{userData?.user.email || 'N/A'}</span>
+                <span className="text-gray-400">
+                  {userData?.user.email || "N/A"}
+                </span>
               </div>
               <div className="flex items-center justify-center md:justify-start gap-2">
                 <Phone className="w-4 h-4 text-purple-400" />
-                <span className="text-gray-400">{userData?.user.phone || 'N/A'}</span>
+                <span className="text-gray-400">
+                  {userData?.user.phone || "N/A"}
+                </span>
               </div>
               <div className="flex items-center justify-center md:justify-start gap-2">
                 <Calendar className="w-4 h-4 text-purple-400" />
-                <span className="text-gray-400">DOB: {userData?.user.dob || 'N/A'}</span>
+                <span className="text-gray-400">
+                  DOB: {userData?.user.dob || "N/A"}
+                </span>
               </div>
             </div>
           </div>
@@ -224,21 +270,32 @@ const Userdetail = () => {
               <div className="p-2 md:p-3 bg-purple-500/10 rounded-xl">
                 <Wallet className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
               </div>
-              <h2 className="text-lg md:text-xl font-bold text-white">Wallet Balances</h2>
+              <h2 className="text-lg md:text-xl font-bold text-white">
+                Wallet Balances
+              </h2>
             </div>
 
             {/* Wallet Grid - 2 columns by default, 3 on larger screens */}
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
               {userData?.wallet.map((wallet) => (
-                <div key={wallet.id} className="p-3 md:p-4 bg-[#1A1A2E] rounded-xl border border-purple-500/10">
+                <div
+                  key={wallet.id}
+                  className="p-3 md:p-4 bg-[#1A1A2E] rounded-xl border border-purple-500/10"
+                >
                   <div className="flex items-center justify-between mb-2">
                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                      <span className="text-purple-400 font-medium text-sm md:text-base">{wallet.cryptoname}</span>
+                      <span className="text-purple-400 font-medium text-sm md:text-base">
+                        {wallet.cryptoname}
+                      </span>
                     </div>
-                    <span className="text-gray-400 text-xs md:text-sm">#{wallet.id}</span>
+                    <span className="text-gray-400 text-xs md:text-sm">
+                      #{wallet.id}
+                    </span>
                   </div>
                   <div className="mt-2">
-                    <span className="text-white font-medium text-base md:text-lg">{wallet.balance || '0'}</span>
+                    <span className="text-white font-medium text-base md:text-lg">
+                      {wallet.balance || "0"}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -253,17 +310,21 @@ const Userdetail = () => {
                 <div className="p-2 md:p-3 bg-purple-500/10 rounded-xl">
                   <Users className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
                 </div>
-                <h2 className="text-lg md:text-xl font-bold text-white">Referral Info</h2>
+                <h2 className="text-lg md:text-xl font-bold text-white">
+                  Referral Info
+                </h2>
               </div>
               <div className="space-y-3">
                 {/* My Referral Code */}
                 <div className="p-3 md:p-4 bg-[#1A1A2E] rounded-xl">
-                  <p className="text-gray-400 text-xs md:text-sm mb-2">Your Referral Code</p>
+                  <p className="text-gray-400 text-xs md:text-sm mb-2">
+                    Your Referral Code
+                  </p>
                   <div className="flex items-center gap-2">
                     <code className="flex-1 px-2 md:px-3 py-2 bg-purple-500/10 rounded-lg text-purple-400 font-mono text-sm md:text-base overflow-x-auto">
-                      {userData?.user.my_referral_code || 'N/A'}
+                      {userData?.user.my_referral_code || "N/A"}
                     </code>
-                    <button 
+                    <button
                       onClick={handleCopyReferralCode}
                       className="p-2 rounded-lg bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition-colors"
                     >
@@ -271,20 +332,24 @@ const Userdetail = () => {
                     </button>
                   </div>
                 </div>
-                
+
                 {/* Referred By */}
                 <div className="p-3 md:p-4 bg-[#1A1A2E] rounded-xl">
-                  <p className="text-gray-400 text-xs md:text-sm mb-2">Referred By</p>
+                  <p className="text-gray-400 text-xs md:text-sm mb-2">
+                    Referred By
+                  </p>
                   <p className="text-white font-medium text-sm md:text-base">
-                    {userData?.user.referred_by || 'N/A'}
+                    {userData?.user.referred_by || "N/A"}
                   </p>
                 </div>
 
                 {/* Total Referrals */}
                 <div className="p-3 md:p-4 bg-[#1A1A2E] rounded-xl">
-                  <p className="text-gray-400 text-xs md:text-sm mb-2">Total Referrals</p>
+                  <p className="text-gray-400 text-xs md:text-sm mb-2">
+                    Total Referrals
+                  </p>
                   <p className="text-white font-medium text-sm md:text-base">
-                    {userData?.referrals.length || '0'}
+                    {userData?.referrals.length || "0"}
                   </p>
                 </div>
               </div>
@@ -296,23 +361,31 @@ const Userdetail = () => {
                 <div className="p-2 md:p-3 bg-purple-500/10 rounded-xl">
                   <Shield className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
                 </div>
-                <h2 className="text-lg md:text-xl font-bold text-white">KYC Details</h2>
+                <h2 className="text-lg md:text-xl font-bold text-white">
+                  KYC Details
+                </h2>
               </div>
               <div className="space-y-3 md:space-y-4">
                 <div className="p-3 md:p-4 bg-[#1A1A2E] rounded-xl">
-                  <p className="text-gray-400 text-xs md:text-sm mb-1 md:mb-2">Aadhar Card</p>
+                  <p className="text-gray-400 text-xs md:text-sm mb-1 md:mb-2">
+                    Aadhar Card
+                  </p>
                   <p className="text-white font-medium text-sm md:text-base">
-                    {userData?.kyc.aadhar || 'Not Provided'}
+                    {userData?.kyc.aadhar || "Not Provided"}
                   </p>
                 </div>
                 <div className="p-3 md:p-4 bg-[#1A1A2E] rounded-xl">
-                  <p className="text-gray-400 text-xs md:text-sm mb-1 md:mb-2">PAN Card</p>
+                  <p className="text-gray-400 text-xs md:text-sm mb-1 md:mb-2">
+                    PAN Card
+                  </p>
                   <p className="text-white font-medium text-sm md:text-base">
-                    {userData?.kyc.pan || 'Not Provided'}
+                    {userData?.kyc.pan || "Not Provided"}
                   </p>
                 </div>
                 <div className="p-3 md:p-4 bg-[#1A1A2E] rounded-xl">
-                  <p className="text-gray-400 text-xs md:text-sm mb-1 md:mb-2">KYC Status</p>
+                  <p className="text-gray-400 text-xs md:text-sm mb-1 md:mb-2">
+                    KYC Status
+                  </p>
                   <div className="text-white font-medium text-sm md:text-base">
                     {getKycStatusBadge(userData?.kyc.status || 0)}
                   </div>
@@ -324,15 +397,17 @@ const Userdetail = () => {
 
         {/* Bank Accounts Section */}
         <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-2xl border border-purple-500/20 p-4 md:p-6">
-          <div 
+          <div
             className="flex items-center justify-between cursor-pointer"
-            onClick={() => toggleSection('bankAccounts')}
+            onClick={() => toggleSection("bankAccounts")}
           >
             <div className="flex items-center gap-3">
               <div className="p-2 md:p-3 bg-purple-500/10 rounded-xl">
                 <Building className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
               </div>
-              <h2 className="text-lg md:text-xl font-bold text-white">Bank Accounts</h2>
+              <h2 className="text-lg md:text-xl font-bold text-white">
+                Bank Accounts
+              </h2>
             </div>
             {expandedSections.bankAccounts ? (
               <ChevronUp className="w-5 h-5 text-purple-400" />
@@ -340,7 +415,7 @@ const Userdetail = () => {
               <ChevronDown className="w-5 h-5 text-purple-400" />
             )}
           </div>
-          
+
           {expandedSections.bankAccounts && (
             <div className="mt-4 space-y-3">
               {userData?.bankAccounts.length === 0 ? (
@@ -349,17 +424,52 @@ const Userdetail = () => {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {userData?.bankAccounts.map((account: any, index: number) => (
-                    <div key={index} className="p-4 bg-[#1A1A2E] rounded-xl border border-purple-500/10">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="w-4 h-4 text-purple-400" />
-                          <span className="text-white font-medium">Bank Name</span>
+                  {userData?.bankAccounts
+                    .filter((account: any) => account.status === 1)
+                    .map((account: any, index: number) => (
+                      <div
+                        key={index}
+                        className="p-4 bg-[#1A1A2E] rounded-xl border border-purple-500/10"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Building2 className="w-4 h-4 text-purple-400" />
+                            <span className="text-white font-medium">
+                              {account.status === 1 && account.usdt
+                                ? "Wallet"
+                                : "Bank Account"}
+                            </span>
+                          </div>
                         </div>
+
+                        {/* Conditional Display */}
+                        {account.status === 1 && account.usdt ? (
+                          <div className="text-sm text-white space-y-2 px-2 py-1">
+                            <div>
+                              <strong>USDT Address:</strong> {account.usdt}
+                            </div>
+                            <div>
+                              <strong>Network:</strong> {account.network}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="text-sm text-white space-y-2 px-2 py-1">
+                            <div>
+                              <strong>Bank Name:</strong>{" "}
+                              {account.accountname || "N/A"}
+                            </div>
+                            <div>
+                              <strong>IFSC Code:</strong>{" "}
+                              {account.ifsccode || "N/A"}
+                            </div>
+                            <div>
+                              <strong>Account Number:</strong>{" "}
+                              {account.accountnumber || "N/A"}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      {/* Bank account details will be added here */}
-                    </div>
-                  ))}
+                    ))}
                 </div>
               )}
             </div>
@@ -368,15 +478,17 @@ const Userdetail = () => {
 
         {/* Referrals List Section */}
         <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-2xl border border-purple-500/20 p-4 md:p-6">
-          <div 
+          <div
             className="flex items-center justify-between cursor-pointer"
-            onClick={() => toggleSection('referrals')}
+            onClick={() => toggleSection("referrals")}
           >
             <div className="flex items-center gap-3">
               <div className="p-2 md:p-3 bg-purple-500/10 rounded-xl">
                 <Users className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
               </div>
-              <h2 className="text-lg md:text-xl font-bold text-white">Referral List</h2>
+              <h2 className="text-lg md:text-xl font-bold text-white">
+                Referral List
+              </h2>
             </div>
             {expandedSections.referrals ? (
               <ChevronUp className="w-5 h-5 text-purple-400" />
@@ -384,7 +496,7 @@ const Userdetail = () => {
               <ChevronDown className="w-5 h-5 text-purple-400" />
             )}
           </div>
-          
+
           {expandedSections.referrals && (
             <div className="mt-4 space-y-3">
               {userData?.referrals.length === 0 ? (
@@ -394,7 +506,10 @@ const Userdetail = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {userData?.referrals.map((referral: Referral) => (
-                    <div key={referral.id} className="p-4 bg-[#1A1A2E] rounded-xl border border-purple-500/10">
+                    <div
+                      key={referral.id}
+                      className="p-4 bg-[#1A1A2E] rounded-xl border border-purple-500/10"
+                    >
                       <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
                           <User className="w-5 h-5 text-purple-400" />
@@ -423,15 +538,17 @@ const Userdetail = () => {
 
         {/* Withdrawals History Section */}
         <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-2xl border border-purple-500/20 p-4 md:p-6">
-          <div 
+          <div
             className="flex items-center justify-between cursor-pointer"
-            onClick={() => toggleSection('withdrawals')}
+            onClick={() => toggleSection("withdrawals")}
           >
             <div className="flex items-center gap-3">
               <div className="p-2 md:p-3 bg-purple-500/10 rounded-xl">
                 <History className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
               </div>
-              <h2 className="text-lg md:text-xl font-bold text-white">Withdrawal History</h2>
+              <h2 className="text-lg md:text-xl font-bold text-white">
+                Withdrawal History
+              </h2>
             </div>
             {expandedSections.withdrawals ? (
               <ChevronUp className="w-5 h-5 text-purple-400" />
@@ -439,7 +556,7 @@ const Userdetail = () => {
               <ChevronDown className="w-5 h-5 text-purple-400" />
             )}
           </div>
-          
+
           {expandedSections.withdrawals && (
             <div className="mt-4">
               {userData?.withdrawals.length === 0 ? (
@@ -452,29 +569,45 @@ const Userdetail = () => {
                     <thead>
                       <tr className="text-left border-b border-purple-500/10">
                         <th className="pb-4 text-gray-400 font-medium">ID</th>
-                        <th className="pb-4 text-gray-400 font-medium">Amount</th>
-                        <th className="pb-4 text-gray-400 font-medium">Currency</th>
-                        <th className="pb-4 text-gray-400 font-medium">Status</th>
+                        <th className="pb-4 text-gray-400 font-medium">
+                          Amount
+                        </th>
+                        <th className="pb-4 text-gray-400 font-medium">
+                          Currency
+                        </th>
+                        <th className="pb-4 text-gray-400 font-medium">
+                          Status
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       {userData?.withdrawals.map((withdrawal) => (
-                        <tr 
+                        <tr
                           key={withdrawal.id}
                           className="border-b border-purple-500/10 hover:bg-purple-500/5 transition-colors"
                         >
                           <td className="py-4 text-white">#{withdrawal.id}</td>
-                          <td className="py-4 text-purple-400">₹{withdrawal.balance}</td>
-                          <td className="py-4 text-white">{withdrawal.cryptoname}</td>
+                          <td className="py-4 text-purple-400">
+                            ₹{withdrawal.balance}
+                          </td>
+                          <td className="py-4 text-white">
+                            {withdrawal.cryptoname}
+                          </td>
                           <td className="py-4">
-                            <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-                              withdrawal.status === '0' ? 'bg-yellow-500/20 text-yellow-400' :
-                              withdrawal.status === '1' ? 'bg-green-500/20 text-green-400' :
-                              'bg-red-500/20 text-red-400'
-                            }`}>
-                              {withdrawal.status === '0' ? 'Pending' :
-                               withdrawal.status === '1' ? 'Completed' :
-                               'Failed'}
+                            <span
+                              className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                                withdrawal.status === "0"
+                                  ? "bg-yellow-500/20 text-yellow-400"
+                                  : withdrawal.status === "1"
+                                  ? "bg-green-500/20 text-green-400"
+                                  : "bg-red-500/20 text-red-400"
+                              }`}
+                            >
+                              {withdrawal.status === "0"
+                                ? "Pending"
+                                : withdrawal.status === "1"
+                                ? "Completed"
+                                : "Failed"}
                             </span>
                           </td>
                         </tr>
