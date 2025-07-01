@@ -20,8 +20,8 @@ interface KYCStatus {
 }
 
 interface Documents {
-  aadharfront: string | null;
-  aadharback: string | null;
+  aadhar_front: string | null;
+  aadhar_back: string | null;
   pan: string | null;
 }
 
@@ -267,10 +267,10 @@ const KYCRequest = () => {
                   </h3>
                 </div>
                 <div className="p-3">
-                  {selectedRequest.documents.aadharfront ? (
+                  {selectedRequest.documents.aadhar_front ? (
                     <div className="relative w-full h-36 sm:h-40">
                       <img
-                        src={selectedRequest.documents.aadharfront}
+                        src={selectedRequest.documents.aadhar_front}
                         alt="Aadhar Front"
                         className="w-full h-full object-contain rounded-lg"
                       />
@@ -291,10 +291,10 @@ const KYCRequest = () => {
                   </h3>
                 </div>
                 <div className="p-3">
-                  {selectedRequest.documents.aadharback ? (
+                  {selectedRequest.documents.aadhar_back ? (
                     <div className="relative w-full h-36 sm:h-40">
                       <img
-                        src={selectedRequest.documents.aadharback}
+                        src={selectedRequest.documents.aadhar_back}
                         alt="Aadhar Back"
                         className="w-full h-full object-contain rounded-lg"
                       />
