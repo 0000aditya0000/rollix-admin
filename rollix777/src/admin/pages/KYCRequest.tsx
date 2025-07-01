@@ -64,10 +64,10 @@ interface KYCActionResponse {
 }
 
 const STATUS_CODES = {
-  PENDING: "0",
-  APPROVED: "1",
-  REJECTED: "2",
-  ALL: "3",
+  PENDING: "pending",
+  APPROVED: "approved",
+  REJECTED: "rejected",
+  ALL: "all",
 } as const;
 
 type StatusCode = (typeof STATUS_CODES)[keyof typeof STATUS_CODES];
@@ -173,7 +173,7 @@ const KYCRequest = () => {
 
       const url = new URL(`${baseUrl}/api/user/kyc/approve/${userId}`);
       const response = await axios.put<KYCActionResponse>(url.toString(), {
-        status: isApprove ? 1 : 2,
+        status: isApprove ? "approved" : "rejected",
         page: currentPage,
         note: comment,
       });
