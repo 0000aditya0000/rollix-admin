@@ -53,21 +53,21 @@ interface UserData {
     dob: string | null;
     aadhar: string | null;
     pan: string | null;
-    kycstatus: number;
+    // kycstatus: number;
     image: string;
     my_referral_code: string;
     referred_by: string | null;
-    aadhar_front: string;
-    aadhar_back: string;
   };
   wallet: WalletBalance[];
   bankAccounts: any[];
   referrals: Referral[];
   withdrawals: Withdrawal[];
   kyc: {
-    status: number;
-    aadhar: string | null;
+    status: string;
     pan: string | null;
+    aadhar_front: string;
+    aadhar_back: string;
+    kyc_note: string;
   };
 }
 
@@ -128,21 +128,21 @@ const Userdetail = () => {
     }
   };
 
-  const getKycStatusBadge = (status: number) => {
+  const getKycStatusBadge = (status: string) => {
     switch (status) {
-      case 0:
+      case "pending":
         return (
           <span className="px-3 py-1 bg-red-500/20 text-yellow-400 rounded-full text-sm">
             Pending
           </span>
         );
-      case 1:
+      case "approved":
         return (
           <span className="px-3 py-1 bg-yellow-500/20 text-green-400 rounded-full text-sm">
             Approved
           </span>
         );
-      case 2:
+      case "rejected":
         return (
           <span className="px-3 py-1 bg-green-500/20 text-red-400 rounded-full text-sm">
             Rejected
@@ -233,7 +233,7 @@ const Userdetail = () => {
                 </h1>
                 <p className="text-gray-400">@{userData?.user.username}</p>
               </div>
-              {getKycStatusBadge(userData?.kyc.status || 0)}
+              {getKycStatusBadge(userData?.kyc.status)}
             </div>
 
             {/* Contact Info - Stack on mobile, grid on desktop */}
@@ -279,28 +279,30 @@ const Userdetail = () => {
 
             {/* Wallet Grid - 2 columns by default, 3 on larger screens */}
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-              {userData?.wallet.map((wallet) => (
-                <div
-                  key={wallet.id}
-                  className="p-3 md:p-4 bg-[#1A1A2E] rounded-xl border border-purple-500/10"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                      <span className="text-purple-400 font-medium text-sm md:text-base">
-                        {wallet.cryptoname}
+              {userData?.wallet
+                .filter((wallet) => wallet.cryptoname === "INR")
+                .map((wallet) => (
+                  <div
+                    key={wallet.id}
+                    className="p-3 md:p-4 bg-[#1A1A2E] rounded-xl border border-purple-500/10"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                        <span className="text-purple-400 font-medium text-sm md:text-base">
+                          {wallet.cryptoname}
+                        </span>
+                      </div>
+                      <span className="text-gray-400 text-xs md:text-sm">
+                        #{wallet.id}
                       </span>
                     </div>
-                    <span className="text-gray-400 text-xs md:text-sm">
-                      #{wallet.id}
-                    </span>
+                    <div className="mt-2">
+                      <span className="text-white font-medium text-base md:text-lg">
+                        {wallet.balance || "0"}
+                      </span>
+                    </div>
                   </div>
-                  <div className="mt-2">
-                    <span className="text-white font-medium text-base md:text-lg">
-                      {wallet.balance || "0"}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           </div>
 
@@ -377,9 +379,9 @@ const Userdetail = () => {
                   <div className="text-sm text-white space-y-1">
                     <div>
                       <span className="font-medium">Front:</span>{" "}
-                      {userData.user.aadhar_front ? (
+                      {userData.kyc.aadhar_front ? (
                         <a
-                          href={userData.user.aadhar_front}
+                          href={userData.kyc.aadhar_front}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-purple-400 underline hover:text-purple-300"
@@ -392,9 +394,9 @@ const Userdetail = () => {
                     </div>
                     <div>
                       <span className="font-medium">Back:</span>{" "}
-                      {userData.user.aadhar_back ? (
+                      {userData.kyc.aadhar_back ? (
                         <a
-                          href={userData.user.aadhar_back}
+                          href={userData.kyc.aadhar_back}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-purple-400 underline hover:text-purple-300"
@@ -413,9 +415,9 @@ const Userdetail = () => {
                   <p className="text-gray-400 text-xs md:text-sm mb-1 md:mb-2">
                     PAN Card
                   </p>
-                  {userData.user.pan ? (
+                  {userData.kyc.pan ? (
                     <a
-                      href={userData.user.pan}
+                      href={userData.kyc.pan}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-purple-400 underline text-sm md:text-base hover:text-purple-300"
@@ -435,7 +437,7 @@ const Userdetail = () => {
                     KYC Status
                   </p>
                   <div className="text-sm md:text-base font-semibold">
-                    {getKycStatusBadge(userData.user.kycstatus || 0)}
+                    {getKycStatusBadge(userData.kyc.status)}
                   </div>
                 </div>
               </div>
