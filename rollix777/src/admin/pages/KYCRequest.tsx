@@ -349,7 +349,7 @@ const KYCRequest = () => {
               />
             </div>
 
-            {selectedRequest.kyc_status.code === 0 && (
+            {selectedRequest.kyc_status.text === "Pending" && (
               <div className="flex gap-4 mt-6">
                 <button
                   onClick={() => {
