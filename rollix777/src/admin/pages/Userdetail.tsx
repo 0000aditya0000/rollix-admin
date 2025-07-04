@@ -264,7 +264,7 @@ const Userdetail = () => {
       {/* Main Content Grid - Stack on mobile, side-by-side on desktop */}
       <div className="grid grid-cols-1 gap-4 md:gap-6">
         {/* Top Row - Wallet and KYC */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
+        <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-2xl border border-purple-500/20 p-4 md:p-6">
           {/* Left Column - Wallet Balances */}
           <div className="lg:col-span-7 bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-2xl border border-purple-500/20 p-4 md:p-6">
             {/* Section Header */}
@@ -278,7 +278,7 @@ const Userdetail = () => {
             </div>
 
             {/* Wallet Grid - 2 columns by default, 3 on larger screens */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-1 gap-3 md:gap-4">
               {userData?.wallet
                 .filter((wallet) => wallet.cryptoname === "INR")
                 .map((wallet) => (
@@ -307,7 +307,7 @@ const Userdetail = () => {
           </div>
 
           {/* Right Column - KYC & Referrals */}
-          <div className="lg:col-span-5 space-y-4 md:space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-4">
             {/* Referral Info Section */}
             <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-2xl border border-purple-500/20 p-4 md:p-6">
               <div className="flex items-center gap-3 mb-4 md:mb-6">
