@@ -17,7 +17,7 @@ import {
   ChevronUp,
   Building,
 } from "lucide-react";
-import { fetchUserAllData } from "../../lib/services/userService";
+import { fetchUserAllData, loginStatus } from "../../lib/services/userService";
 import { useParams, useNavigate } from "react-router-dom";
 
 interface WalletBalance {
@@ -57,6 +57,7 @@ interface UserData {
     image: string;
     my_referral_code: string;
     referred_by: string | null;
+    is_login_disabled: boolean;
   };
   wallet: WalletBalance[];
   bankAccounts: any[];
@@ -82,6 +83,8 @@ const Userdetail = () => {
     referrals: false,
     withdrawals: false,
   });
+  const [banUser, setBanUser] = useState<boolean>(false);
+  // const [banWithdrawal, setBanWithdrawal] = useState(false);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -119,6 +122,20 @@ const Userdetail = () => {
 
     loadUserData();
   }, [userId]);
+
+  const handleBanUserChange = async (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const value = e.target.value === "yes";
+
+    try {
+      await loginStatus(Number(userId), value);
+      console.log(`User ${value ? "disabled" : "enabled"}`);
+      setBanUser(value);
+    } catch (error) {
+      console.error("Failed to change user login status:", error);
+    }
+  };
 
   const handleCopyReferralCode = () => {
     if (userData?.user.my_referral_code) {
@@ -234,6 +251,12 @@ const Userdetail = () => {
                 <p className="text-gray-400">@{userData?.user.username}</p>
               </div>
               {getKycStatusBadge(userData?.kyc.status)}
+              {/* Show Disabled badge if user is login disabled */}
+              {userData?.is_login_disabled === 1 && (
+                <span className="px-3 py-1 rounded-full text-sm font-medium bg-red-500/20 text-red-400">
+                  Disabled
+                </span>
+              )}
             </div>
 
             {/* Contact Info - Stack on mobile, grid on desktop */}
@@ -266,43 +289,90 @@ const Userdetail = () => {
         {/* Top Row - Wallet and KYC */}
         <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-2xl border border-purple-500/20 p-4 md:p-6">
           {/* Left Column - Wallet Balances */}
-          <div className="lg:col-span-7 bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-2xl border border-purple-500/20 p-4 md:p-6">
-            {/* Section Header */}
-            <div className="flex items-center gap-3 mb-4 md:mb-6">
-              <div className="p-2 md:p-3 bg-purple-500/10 rounded-xl">
-                <Wallet className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            {/* Wallet Balances */}
+            <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-2xl border border-purple-500/20 p-4 md:p-6">
+              {/* Section Header */}
+              <div className="flex items-center gap-3 mb-4 md:mb-6">
+                <div className="p-2 md:p-3 bg-purple-500/10 rounded-xl">
+                  <Wallet className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
+                </div>
+                <h2 className="text-lg md:text-xl font-bold text-white">
+                  Wallet Balances
+                </h2>
               </div>
-              <h2 className="text-lg md:text-xl font-bold text-white">
-                Wallet Balances
-              </h2>
-            </div>
 
-            {/* Wallet Grid - 2 columns by default, 3 on larger screens */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-1 gap-3 md:gap-4">
-              {userData?.wallet
-                .filter((wallet) => wallet.cryptoname === "INR")
-                .map((wallet) => (
-                  <div
-                    key={wallet.id}
-                    className="p-3 md:p-4 bg-[#1A1A2E] rounded-xl border border-purple-500/10"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                        <span className="text-purple-400 font-medium text-sm md:text-base">
-                          {wallet.cryptoname}
+              {/* Wallet Grid - 2 columns by default, 3 on larger screens */}
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-1 gap-3 md:gap-4">
+                {userData?.wallet
+                  .filter((wallet) => wallet.cryptoname === "INR")
+                  .map((wallet) => (
+                    <div
+                      key={wallet.id}
+                      className="p-3 md:p-4 bg-[#1A1A2E] rounded-xl border border-purple-500/10"
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                          <span className="text-purple-400 font-medium text-sm md:text-base">
+                            {wallet.cryptoname}
+                          </span>
+                        </div>
+                        <span className="text-gray-400 text-xs md:text-sm">
+                          #{wallet.id}
                         </span>
                       </div>
-                      <span className="text-gray-400 text-xs md:text-sm">
-                        #{wallet.id}
-                      </span>
+                      <div className="mt-2">
+                        <span className="text-white font-medium text-base md:text-lg">
+                          {wallet.balance || "0"}
+                        </span>
+                      </div>
                     </div>
-                    <div className="mt-2">
-                      <span className="text-white font-medium text-base md:text-lg">
-                        {wallet.balance || "0"}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+              </div>
+            </div>
+
+            {/* Activities */}
+            <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-2xl border border-purple-500/20 p-4 md:p-6">
+              <div className="flex items-center gap-3 mb-4 md:mb-6">
+                <div className="p-2 md:p-3 bg-purple-500/10 rounded-xl">
+                  <Shield className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
+                </div>
+                <h2 className="text-lg md:text-xl font-bold text-white">
+                  Activities
+                </h2>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Ban User */}
+                <div>
+                  <label className="block text-gray-400 text-sm mb-2">
+                    Ban User
+                  </label>
+                  <select
+                    className="w-full p-2 bg-[#1A1A2E] border border-purple-500/20 rounded-lg text-white focus:outline-none"
+                    value={banUser ? "yes" : "no"}
+                    onChange={handleBanUserChange}
+                  >
+                    <option value="no">Enable</option>
+                    <option value="yes">Disable</option>
+                  </select>
+                </div>
+
+                {/* Ban Withdrawal */}
+                <div>
+                  <label className="block text-gray-400 text-sm mb-2">
+                    Ban Withdrawal
+                  </label>
+                  <select
+                    className="w-full p-2 bg-[#1A1A2E] border border-purple-500/20 rounded-lg text-white focus:outline-none"
+                    // value={banWithdrawal}
+                    // onChange={(e) => setBanWithdrawal(e.target.value)}
+                  >
+                    <option value="no">No</option>
+                    <option value="yes">Yes</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
 

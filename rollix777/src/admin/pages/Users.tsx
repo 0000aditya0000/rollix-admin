@@ -122,6 +122,12 @@ const Users = () => {
     setFilteredData(data);
   };
 
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleString("en-IN", {
+      dateStyle: "medium",
+    });
+  };
+
   // Popup Component for Adding User
   const Popup = ({ onClose, onAddUser }) => {
     const [username, setUsername] = useState("");
@@ -478,7 +484,7 @@ const Users = () => {
                       (wallet: any) => wallet.cryptoname === "INR"
                     )?.balance || "0"}
                   </td>
-                  <td className="py-4 px-6">{"N/A"}</td>
+                  <td className="py-4 px-6">{formatDate(user.created_at)}</td>
                   <td className="py-4 px-6">
                     <div className="flex gap-2">
                       <button

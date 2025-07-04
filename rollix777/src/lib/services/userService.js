@@ -1,13 +1,13 @@
 import { baseUrl } from "../config/server";
 
 // Fetch user data
-const fetchUser = async userId => {
+const fetchUser = async (userId) => {
   try {
     const response = await fetch(`${baseUrl}/api/user/user/${userId}`, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     });
 
     if (!response.ok) {
@@ -22,18 +22,23 @@ const fetchUser = async userId => {
 };
 
 // Fetch all user data including wallet, referrals, etc.
-const fetchAllUserData = async userId => {
+const fetchAllUserData = async (userId) => {
   try {
-    const response = await fetch(`${baseUrl}/api/user/user-all-data/${userId}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json"
+    const response = await fetch(
+      `${baseUrl}/api/user/user-all-data/${userId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
-    });
+    );
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
+      throw new Error(
+        errorData.message || `HTTP error! Status: ${response.status}`
+      );
     }
 
     return await response.json();
@@ -50,9 +55,9 @@ const updateUser = async (userId, formData) => {
     const response = await fetch(`${baseUrl}/api/user/user/${userId}`, {
       method: "PATCH",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(formData)
+      body: JSON.stringify(formData),
     });
 
     if (!response.ok) {
@@ -76,8 +81,8 @@ export const userCouponHistory = async (userId) => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem('token')}`
-      }
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
     });
 
     if (!response.ok) {
@@ -91,7 +96,32 @@ export const userCouponHistory = async (userId) => {
   }
 };
 
-export const fetchUserData = async userId => fetchUser(userId);
-export const fetchUserAllData = async userId => fetchAllUserData(userId);
+export const loginStatus = async (userId, disable) => {
+  try {
+    const response = await fetch(`${baseUrl}/api/admin/disable-login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ userId, disable }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `HTTP error! Status: ${response.status}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error setting login status:", error.message);
+    throw error;
+  }
+};
+
+export const fetchUserData = async (userId) => fetchUser(userId);
+export const fetchUserAllData = async (userId) => fetchAllUserData(userId);
 export const updateUserData = async (userId, formData) =>
   updateUser(userId, formData);
