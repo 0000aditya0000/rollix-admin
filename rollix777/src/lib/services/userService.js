@@ -121,6 +121,31 @@ export const loginStatus = async (userId, disable) => {
   }
 };
 
+export const banWithdrawal = async (userId, block) => {
+  try {
+    const response = await fetch(`${baseUrl}/api/admin/block-withdrawal`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ userId, block }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `HTTP error! Status: ${response.status}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error blocking withdrawal:", error.message);
+    throw error;
+  }
+};
+
 export const fetchUserData = async (userId) => fetchUser(userId);
 export const fetchUserAllData = async (userId) => fetchAllUserData(userId);
 export const updateUserData = async (userId, formData) =>
