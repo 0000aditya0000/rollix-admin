@@ -17,7 +17,11 @@ import {
   ChevronUp,
   Building,
 } from "lucide-react";
-import { fetchUserAllData, loginStatus } from "../../lib/services/userService";
+import {
+  fetchUserAllData,
+  loginStatus,
+  banWithdrawal,
+} from "../../lib/services/userService";
 import { useParams, useNavigate } from "react-router-dom";
 
 interface WalletBalance {
@@ -84,7 +88,7 @@ const Userdetail = () => {
     withdrawals: false,
   });
   const [banUser, setBanUser] = useState<boolean>(false);
-  // const [banWithdrawal, setBanWithdrawal] = useState(false);
+  const [banWithdrawalVal, setBanWithdrawalVal] = useState(false);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -134,6 +138,19 @@ const Userdetail = () => {
       setBanUser(value);
     } catch (error) {
       console.error("Failed to change user login status:", error);
+    }
+  };
+
+  const handleBanWithdrawal = async (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const value = e.target.value === "yes";
+    try {
+      await banWithdrawal(Number(userId), value);
+      setBanWithdrawalVal(value); // ✅ Update state to reflect selection
+      console.log(`Withdrawal ${value ? "banned" : "allowed"}`);
+    } catch (error) {
+      console.error("Failed to ban withdrawal", error);
     }
   };
 
@@ -365,8 +382,8 @@ const Userdetail = () => {
                   </label>
                   <select
                     className="w-full p-2 bg-[#1A1A2E] border border-purple-500/20 rounded-lg text-white focus:outline-none"
-                    // value={banWithdrawal}
-                    // onChange={(e) => setBanWithdrawal(e.target.value)}
+                    value={banWithdrawalVal ? "yes" : "no"}
+                    onChange={handleBanWithdrawal}
                   >
                     <option value="no">No</option>
                     <option value="yes">Yes</option>
