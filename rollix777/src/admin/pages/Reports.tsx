@@ -8,8 +8,10 @@ import {
 } from "lucide-react";
 import {
   getColorReport,
+  getwingo5dReport,
   getUserReport,
   getTransactionsReport,
+  getTrxReport,
 } from "../../lib/services/reportService";
 import { TransactionReport } from "../../lib/utils/exportToExcel";
 import { exportTransactionsToExcel } from "../../lib/utils/exportToExcel";
@@ -99,6 +101,66 @@ interface UserReport {
   other_game_stats: OtherGameStats;
 }
 
+interface PositionBet {
+  total_bets: number;
+  total_amount: number;
+  unique_users: number;
+}
+
+interface Digits {
+  A: number;
+  B: number;
+  C: number;
+  D: number;
+  E: number;
+}
+
+interface WingoResult {
+  draw_number: string;
+  digits: Digits;
+  sum: number;
+}
+
+export interface WingoGameData {
+  success: boolean;
+  period_number: string;
+  timer: string;
+  result: WingoResult;
+  position_bets: Record<string, PositionBet>;
+  size_bets: Record<string, PositionBet>;
+  summary: {
+    total_bets: number;
+    total_amount: number;
+    total_unique_users: number;
+  };
+}
+
+interface TrxGameResult {
+  number: number;
+  color: "red" | "green" | "purple";
+  size: "big" | "small";
+}
+
+interface TrxBetData {
+  total_bets: number;
+  total_amount: number;
+  unique_users: number;
+}
+
+interface TrxGameSummary {
+  total_bets: number;
+  total_amount: number;
+  total_unique_users: number;
+}
+
+interface TrxGameData {
+  period_number: number;
+  result: TrxGameResult;
+  color_bets: Record<string, TrxBetData>;
+  size_bets: Record<string, TrxBetData>;
+  summary: TrxGameSummary;
+}
+
 const Reports = () => {
   const [reportType, setReportType] = useState<"daily" | "weekly" | "monthly">(
     "daily"
@@ -108,6 +170,7 @@ const Reports = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [periodNumber, setPeriodNumber] = useState<string>("");
+  const [wingo5dPeriodNumber, setWingo5dPeriodNumber] = useState<string>("");
   const [userReport, setUserReport] = useState<UserReport | null>(null);
   const [userReportLoading, setUserReportLoading] = useState(false);
   const [userReportError, setUserReportError] = useState<string | null>(null);
@@ -117,9 +180,18 @@ const Reports = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [duration, setDuration] = useState(1);
+  const [wingoGameData, setWingoGameData] = useState<WingoGameData | null>(
+    null
+  );
+  const [timer, setTimer] = useState(1);
+  const [trxPeriodNumber, setTrxPeriodNumber] = useState("");
+  const [trxGameData, setTrxGameData] = useState<TrxGameData | null>(null);
+  const [trxTimer, setTrxxTimer] = useState(1);
   const [activeTab, setActiveTab] = useState("wingo");
 
   const durationsVal = [1, 3, 5, 10];
+  const timerVal = [1, 3, 5, 10];
+  const trxdurationVal = [1];
 
   const fetchGameData = async () => {
     if (!periodNumber) {
@@ -137,10 +209,44 @@ const Reports = () => {
         setError("Failed to fetch game data");
       }
     } catch (error) {
-      console.error("Error fetching game data:", error);
       setError("Error fetching game data");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchWingo5dData = async () => {
+    if (!wingo5dPeriodNumber) {
+      setError("Please enter a period number");
+    }
+
+    try {
+      // setError(null);
+      const response = await getwingo5dReport(wingo5dPeriodNumber, timer);
+      if (response.success) {
+        setWingoGameData(response);
+      } else {
+        setError("Failed to fetching game data");
+      }
+    } catch (error) {
+      console.log(error, "Error fetching game data");
+      setError("Failed to fetch Game data.");
+    }
+  };
+
+  const fetchTrxGameData = async () => {
+    if (!trxPeriodNumber) return setError("Please enter a period number");
+
+    try {
+      const response = await getTrxReport(trxPeriodNumber, trxTimer);
+      if (response.success) {
+        setTrxGameData(response);
+      } else {
+        setError("Failed to fetch Game data");
+      }
+    } catch (error) {
+      console.log(error, "Failed to fetch game data");
+      setError("Error fetching game data");
     }
   };
 
@@ -450,6 +556,403 @@ const Reports = () => {
                     <p className="text-gray-400 text-sm">Unique Users</p>
                     <p className="text-white font-medium">
                       {gameData.summary.total_unique_users}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="h-80 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-gray-400">
+                  Enter a period number and click "Fetch Report" to view game
+                  data
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Wingo 5d Chart */}
+      <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-xl border border-purple-500/20 overflow-hidden">
+        <div className="p-4 border-b border-purple-500/10">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-white">WINGO5D Report</h2>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                {timerVal.map((value) => (
+                  <button
+                    key={value}
+                    onClick={() => setTimer(value)}
+                    className={`px-3 py-1 rounded-md text-sm font-medium border ${
+                      timer === value
+                        ? "bg-purple-600 text-white border-purple-600"
+                        : "bg-transparent text-gray-300 border-purple-500/30 hover:border-purple-500"
+                    } transition-all`}
+                  >
+                    {value} min
+                  </button>
+                ))}
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={wingo5dPeriodNumber}
+                  onChange={(e) => setWingo5dPeriodNumber(e.target.value)}
+                  placeholder="Enter Period Number"
+                  className="w-40 py-2 px-4 bg-[#1A1A2E] border border-purple-500/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                />
+                {error && !wingo5dPeriodNumber && (
+                  <p className="absolute -bottom-6 left-0 text-red-400 text-sm">
+                    {error}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={fetchWingo5dData}
+                disabled={loading || !wingo5dPeriodNumber}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  loading || !wingo5dPeriodNumber
+                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                    : "bg-purple-600 text-white hover:bg-purple-700"
+                }`}
+              >
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Fetching...</span>
+                  </div>
+                ) : (
+                  "Fetch Report"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="p-6">
+          {loading ? (
+            <div className="h-80 flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+                <p className="text-gray-400">Loading game data...</p>
+              </div>
+            </div>
+          ) : error && periodNumber ? (
+            <div className="h-80 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-red-400 mb-4">{error}</p>
+                <button
+                  onClick={fetchWingo5dData}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          ) : wingoGameData ? (
+            <div className="space-y-6">
+              {/* Period and Result */}
+              {wingoGameData && (
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-[#1A1A2E] p-4 rounded-lg border border-purple-500/10">
+                    <p className="text-gray-400 text-sm mb-1">Period Number</p>
+                    <p className="text-white text-xl font-bold">
+                      #{wingoGameData.period_number}
+                    </p>
+                  </div>
+                  <div className="bg-[#1A1A2E] p-4 rounded-lg border border-purple-500/10">
+                    <p className="text-gray-400 text-sm mb-1">Winning Number</p>
+                    <p className="text-white text-xl font-bold">
+                      {wingoGameData?.result?.draw_number}
+                    </p>
+                  </div>
+                  <div className="bg-[#1A1A2E] p-4 rounded-lg border border-purple-500/10">
+                    <p className="text-gray-400 text-sm mb-1">Sum</p>
+                    <p className="text-white text-xl font-bold capitalize">
+                      {wingoGameData.result?.sum}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Digit Results */}
+              <div className="grid grid-cols-5 gap-4">
+                {Object.entries(wingoGameData.result?.digits || {}).map(
+                  ([position, digit]) => {
+                    return (
+                      <div
+                        key={position}
+                        className="bg-[#1A1A2E] p-4 rounded-lg border border-purple-500/10"
+                      >
+                        <div className="flex items-center justify-between mb-3">
+                          <p className="text-white font-medium">
+                            Position {position}
+                          </p>
+                          <span className="text-xl font-bold text-purple-400">
+                            {digit}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }
+                )}
+              </div>
+
+              {/* Summary */}
+              <div className="bg-[#1A1A2E] p-4 rounded-lg border border-purple-500/10">
+                <h3 className="text-white font-medium mb-3">Summary</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-gray-400 text-sm">Total Bets</p>
+                    <p className="text-white font-medium">
+                      {wingoGameData.summary.total_bets}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Total Amount</p>
+                    <p className="text-white font-medium">
+                      ₹{wingoGameData.summary.total_amount}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Unique Users</p>
+                    <p className="text-white font-medium">
+                      {wingoGameData.summary.total_unique_users}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="h-80 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-gray-400">
+                  Enter a period number and click "Fetch Report" to view game
+                  data
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Trx gmae Chart */}
+      <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-xl border border-purple-500/20 overflow-hidden">
+        <div className="p-4 border-b border-purple-500/10">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-white">TRX Report</h2>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setDuration(trxdurationVal[0])}
+                  className={`px-3 py-1 rounded-md text-sm font-medium border ${
+                    trxTimer === trxdurationVal[0]
+                      ? "bg-purple-600 text-white border-purple-600"
+                      : "bg-transparent text-gray-300 border-purple-500/30 hover:border-purple-500"
+                  } transition-all`}
+                >
+                  {durationsVal[0]} min
+                </button>
+              </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={trxPeriodNumber}
+                  onChange={(e) => setTrxPeriodNumber(e.target.value)}
+                  placeholder="Enter Period Number"
+                  className="w-40 py-2 px-4 bg-[#1A1A2E] border border-purple-500/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
+                />
+                {error && !trxPeriodNumber && (
+                  <p className="absolute -bottom-6 left-0 text-red-400 text-sm">
+                    {error}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={fetchTrxGameData}
+                disabled={loading || !trxPeriodNumber}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  loading || !trxPeriodNumber
+                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                    : "bg-purple-600 text-white hover:bg-purple-700"
+                }`}
+              >
+                {loading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Fetching...</span>
+                  </div>
+                ) : (
+                  "Fetch Report"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6">
+          {loading ? (
+            <div className="h-80 flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mx-auto mb-4"></div>
+                <p className="text-gray-400">Loading game data...</p>
+              </div>
+            </div>
+          ) : error && trxPeriodNumber ? (
+            <div className="h-80 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-red-400 mb-4">{error}</p>
+                <button
+                  onClick={fetchTrxGameData}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          ) : trxGameData ? (
+            <div className="space-y-6">
+              {/* Period and Result */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="bg-[#1A1A2E] p-4 rounded-lg border border-purple-500/10">
+                  <p className="text-gray-400 text-sm mb-1">Period Number</p>
+                  <p className="text-white text-xl font-bold">
+                    #{trxGameData.period_number}
+                  </p>
+                </div>
+                <div className="bg-[#1A1A2E] p-4 rounded-lg border border-purple-500/10">
+                  <p className="text-gray-400 text-sm mb-1">Winning Number</p>
+                  <p className="text-white text-xl font-bold">
+                    {trxGameData?.result?.number}
+                  </p>
+                </div>
+                <div className="bg-[#1A1A2E] p-4 rounded-lg border border-purple-500/10">
+                  <p className="text-gray-400 text-sm mb-1">Winning Color</p>
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        trxGameData.result?.color === "red"
+                          ? "bg-red-500"
+                          : trxGameData.result?.color === "green"
+                          ? "bg-green-500"
+                          : "bg-purple-500"
+                      }`}
+                    />
+                    <p className="text-white text-xl font-bold capitalize">
+                      {trxGameData.result?.color}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Color Bets */}
+              <div className="grid grid-cols-3 gap-4">
+                {Object.entries(trxGameData.color_bets).map(([color, data]) => (
+                  <div
+                    key={color}
+                    className={`bg-[#1A1A2E] p-4 rounded-lg border ${
+                      color === trxGameData.result?.color
+                        ? "border-green-500/50 bg-green-500/5"
+                        : "border-purple-500/10"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <div
+                        className={`w-3 h-3 rounded-full ${
+                          color === "red"
+                            ? "bg-red-500"
+                            : color === "green"
+                            ? "bg-green-500"
+                            : "bg-purple-500"
+                        }`}
+                      />
+                      <p className="text-white font-medium capitalize">
+                        {color}
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-gray-400 text-sm">Total Bets</p>
+                        <p className="text-white font-medium">
+                          {data.total_bets}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-sm">Total Amount</p>
+                        <p className="text-white font-medium">
+                          ₹{data.total_amount}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-sm">Unique Users</p>
+                        <p className="text-white font-medium">
+                          {data.unique_users}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Size Bets */}
+              <div className="grid grid-cols-2 gap-4">
+                {Object.entries(trxGameData.size_bets).map(([size, data]) => (
+                  <div
+                    key={size}
+                    className={`bg-[#1A1A2E] p-4 rounded-lg border ${
+                      size === trxGameData.result?.size
+                        ? "border-green-500/50 bg-green-500/5"
+                        : "border-purple-500/10"
+                    }`}
+                  >
+                    <p className="text-white font-medium capitalize mb-2">
+                      {size}
+                    </p>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-gray-400 text-sm">Total Bets</p>
+                        <p className="text-white font-medium">
+                          {data.total_bets}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-sm">Total Amount</p>
+                        <p className="text-white font-medium">
+                          ₹{data.total_amount}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-sm">Unique Users</p>
+                        <p className="text-white font-medium">
+                          {data.unique_users}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Summary */}
+              <div className="bg-[#1A1A2E] p-4 rounded-lg border border-purple-500/10">
+                <h3 className="text-white font-medium mb-3">Summary</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-gray-400 text-sm">Total Bets</p>
+                    <p className="text-white font-medium">
+                      {trxGameData.summary.total_bets}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Total Amount</p>
+                    <p className="text-white font-medium">
+                      ₹{trxGameData.summary.total_amount}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 text-sm">Unique Users</p>
+                    <p className="text-white font-medium">
+                      {trxGameData.summary.total_unique_users}
                     </p>
                   </div>
                 </div>
