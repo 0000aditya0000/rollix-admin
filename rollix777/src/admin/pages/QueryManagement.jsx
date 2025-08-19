@@ -170,6 +170,13 @@ function QueryManagement() {
 
       // Refresh the query details after adding comment
       await fetchQueries(pagination.current_page);
+
+      // Fetch updated query details for modal
+      const updatedQuery = queries.find((q) => q.id === selectedQuery.id);
+      if (updatedQuery) {
+        setSelectedQuery(updatedQuery);
+      }
+
       setComment("");
     } catch (err) {
       setCommentError(err.message || "Failed to add comment");
@@ -408,17 +415,17 @@ function QueryManagement() {
 
       {/* Details Modal */}
       {isModalOpen && selectedQuery && (
-        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={handleCloseModal}
           ></div>
 
-          <div className="relative w-full max-w-3xl bg-gradient-to-b from-[#252547] to-[#1A1A2E] rounded-2xl overflow-hidden animate-fadeIn my-4">
+          <div className="relative w-full max-w-4xl max-h-[90vh] bg-gradient-to-b from-[#252547] to-[#1A1A2E] rounded-2xl overflow-hidden animate-fadeIn flex flex-col">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
 
-            {/* Header */}
-            <div className="flex justify-between items-center p-4 border-b border-purple-500/10">
+            {/* Header - Fixed */}
+            <div className="flex justify-between items-center p-4 border-b border-purple-500/10 bg-[#252547] flex-shrink-0">
               <h2 className="text-lg sm:text-xl font-bold text-white">
                 Query Details - {selectedQuery.id}
               </h2>
@@ -431,112 +438,192 @@ function QueryManagement() {
               </button>
             </div>
 
-            {/* Body */}
-            <div className="p-6 space-y-4">
-              <div className="flex">
-                <span className="w-32 text-sm font-medium text-gray-400">
-                  Name:
-                </span>
-                <span className="text-sm text-white">{selectedQuery.name}</span>
-              </div>
-              <div className="flex">
-                <span className="w-32 text-sm font-medium text-gray-400">
-                  Email:
-                </span>
-                <span className="text-sm text-white">
-                  {selectedQuery.email}
-                </span>
-              </div>
-              <div className="flex">
-                <span className="w-32 text-sm font-medium text-gray-400">
-                  Phone:
-                </span>
-                <span className="text-sm text-white">
-                  {selectedQuery.phone}
-                </span>
-              </div>
-              <div className="flex">
-                <span className="w-32 text-sm font-medium text-gray-400">
-                  Telegram:
-                </span>
-                <span className="text-sm text-white">
-                  {selectedQuery.telegram_id}
-                </span>
-              </div>
-              <div className="flex">
-                <span className="w-32 text-sm font-medium text-gray-400">
-                  Type:
-                </span>
-                <span className="text-sm text-white capitalize">
-                  {selectedQuery.query_type}
-                </span>
-              </div>
-              <div className="flex">
-                <span className="w-32 text-sm font-medium text-gray-400">
-                  Message:
-                </span>
-                <span className="text-sm text-white">
-                  {selectedQuery.message}
-                </span>
-              </div>
-              <div className="flex">
-                <span className="w-32 text-sm font-medium text-gray-400">
-                  Status:
-                </span>
-                <span
-                  className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    statusColors[selectedQuery.status]
-                  }`}
-                >
-                  {selectedQuery.status.replace("_", " ")}
-                </span>
-              </div>
-              <div className="flex">
-                <span className="w-32 text-sm font-medium text-gray-400">
-                  Created At:
-                </span>
-                <span className="text-sm text-white">
-                  {new Date(selectedQuery.created_at).toLocaleString()}
-                </span>
-              </div>
-              <div className="flex">
-                <span className="w-32 text-sm font-medium text-gray-400">
-                  Comments:
-                </span>
-                <span className="text-sm text-white">
-                  {selectedQuery.comment_count}
-                </span>
-              </div>
+            {/* Scrollable Body */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-6 space-y-4">
+                {/* Query Details */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col sm:flex-row">
+                    <span className="w-full sm:w-32 text-sm font-medium text-gray-400 mb-1 sm:mb-0">
+                      Name:
+                    </span>
+                    <span className="text-sm text-white flex-1">
+                      {selectedQuery.name}
+                    </span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row">
+                    <span className="w-full sm:w-32 text-sm font-medium text-gray-400 mb-1 sm:mb-0">
+                      Email:
+                    </span>
+                    <span className="text-sm text-white flex-1">
+                      {selectedQuery.email}
+                    </span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row">
+                    <span className="w-full sm:w-32 text-sm font-medium text-gray-400 mb-1 sm:mb-0">
+                      Phone:
+                    </span>
+                    <span className="text-sm text-white flex-1">
+                      {selectedQuery.phone}
+                    </span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row">
+                    <span className="w-full sm:w-32 text-sm font-medium text-gray-400 mb-1 sm:mb-0">
+                      Telegram:
+                    </span>
+                    <span className="text-sm text-white flex-1">
+                      {selectedQuery.telegram_id}
+                    </span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row">
+                    <span className="w-full sm:w-32 text-sm font-medium text-gray-400 mb-1 sm:mb-0">
+                      Type:
+                    </span>
+                    <span className="text-sm text-white capitalize flex-1">
+                      {selectedQuery.query_type}
+                    </span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row">
+                    <span className="w-full sm:w-32 text-sm font-medium text-gray-400 mb-1 sm:mb-0">
+                      Status:
+                    </span>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full w-fit ${
+                        statusColors[selectedQuery.status]
+                      }`}
+                    >
+                      {selectedQuery.status.replace("_", " ")}
+                    </span>
+                  </div>
+                </div>
 
-              {/* Comment Section */}
-              <div className="mt-6 pt-6 border-t border-purple-500/10">
-                <h3 className="text-lg font-medium text-white mb-4">
-                  Add Comment
-                </h3>
-                {commentError && (
-                  <div className="mb-4 p-3 bg-red-500/20 text-red-400 rounded-lg text-sm">
-                    {commentError}
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium text-gray-400 mb-2">
+                    Message:
+                  </span>
+                  <div className="text-sm text-white bg-[#1A1A2E]/50 rounded-lg p-3">
+                    {selectedQuery.message}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex flex-col sm:flex-row">
+                    <span className="w-full sm:w-32 text-sm font-medium text-gray-400 mb-1 sm:mb-0">
+                      Created At:
+                    </span>
+                    <span className="text-sm text-white flex-1">
+                      {new Date(selectedQuery.created_at).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row">
+                    <span className="w-full sm:w-32 text-sm font-medium text-gray-400 mb-1 sm:mb-0">
+                      Comments:
+                    </span>
+                    <span className="text-sm text-white flex-1">
+                      {selectedQuery.comment_count}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Screenshot / Image */}
+                {selectedQuery.image && (
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium text-gray-400 mb-2">
+                      Screenshot:
+                    </span>
+                    <img
+                      src={selectedQuery.image}
+                      alt="Query Screenshot"
+                      className="rounded-lg border border-purple-500/20 max-h-64 object-contain"
+                    />
                   </div>
                 )}
-                <div className="flex gap-2">
-                  <textarea
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    placeholder="Type your comment here..."
-                    className="flex-1 min-h-[100px] p-3 bg-[#1A1A2E] border border-purple-500/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none"
-                  />
-                  <button
-                    onClick={handleAddComment}
-                    disabled={!comment.trim() || commentLoading}
-                    className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed self-end"
-                  >
-                    {commentLoading ? (
-                      <Loader2 className="animate-spin" size={20} />
+
+                {/* Comments Section */}
+                <div className="border-t border-purple-500/10 pt-6">
+                  <h3 className="text-lg font-medium text-white mb-4">
+                    Comments
+                  </h3>
+                  <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
+                    {selectedQuery.comments &&
+                    selectedQuery.comments.length > 0 ? (
+                      selectedQuery.comments.map(
+                        (comment, index) =>
+                          comment?.comment && (
+                            <div
+                              key={index}
+                              className="bg-[#1A1A2E]/50 rounded-lg p-3"
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="flex-1">
+                                  {comment.role === "admin" ? (
+                                    <p className="text-sm mt-1">
+                                      <span className="text-purple-400 font-medium">
+                                        Admin:
+                                      </span>{" "}
+                                      <span className="text-white">
+                                        {comment.comment}
+                                      </span>
+                                    </p>
+                                  ) : (
+                                    <p className="text-sm mt-1">
+                                      <span className="text-purple-400 font-medium">
+                                        You:
+                                      </span>{" "}
+                                      <span className="text-white">
+                                        {comment.comment}
+                                      </span>
+                                    </p>
+                                  )}
+
+                                  {comment.created_at && (
+                                    <p className="text-gray-500 text-xs mt-1">
+                                      {new Date(
+                                        comment.created_at
+                                      ).toLocaleString()}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                      )
                     ) : (
-                      <Send size={20} />
+                      <p className="text-gray-400 text-sm">No comments yet.</p>
                     )}
-                  </button>
+                  </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Comment Section - Fixed at bottom */}
+            <div className="border-t border-purple-500/10 bg-[#252547] p-6 flex-shrink-0">
+              <h3 className="text-lg font-medium text-white mb-4">
+                Add Comment
+              </h3>
+              {commentError && (
+                <div className="mb-4 p-3 bg-red-500/20 text-red-400 rounded-lg text-sm">
+                  {commentError}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Type your comment here..."
+                  className="flex-1 min-h-[80px] max-h-32 p-3 bg-[#1A1A2E] border border-purple-500/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none"
+                />
+                <button
+                  onClick={handleAddComment}
+                  disabled={!comment.trim() || commentLoading}
+                  className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed self-end"
+                >
+                  {commentLoading ? (
+                    <Loader2 className="animate-spin" size={20} />
+                  ) : (
+                    <Send size={20} />
+                  )}
+                </button>
               </div>
             </div>
           </div>
