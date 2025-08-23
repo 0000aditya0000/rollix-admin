@@ -146,6 +146,30 @@ export const banWithdrawal = async (userId, block) => {
   }
 };
 
+export const updateWalletBalance = async (userId, balance, cryptoname) => {
+  try {
+    const response = await fetch(`${baseUrl}/api/wallet/update`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ userId, cryptoname, balance }),
+    });
+
+    if (!response.ok) {
+      const errordata = await response.json().catch(() => ({}));
+      throw new Error(
+        errordata.message || `HTTP error! status: ${response.status}`
+      );
+    }
+    return await response.json();
+  } catch (error) {
+    console.log("Error Updating Wallet balance", error.message);
+    throw error;
+  }
+};
+
 export const fetchUserData = async (userId) => fetchUser(userId);
 export const fetchUserAllData = async (userId) => fetchAllUserData(userId);
 export const updateUserData = async (userId, formData) =>

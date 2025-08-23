@@ -13,7 +13,7 @@ import axios from "axios";
 import { baseUrl } from "../../lib/config/server";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { getAllRecharges } from '../../lib/services/rechargeService';
+import { getAllRecharges } from "../../lib/services/rechargeService";
 
 interface KYCRequest {
   user_id: number;
@@ -77,10 +77,11 @@ interface Recharge {
   time: string;
 }
 
-
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"kyc" | "withdrawals" | "recharge">("recharge");
+  const [activeTab, setActiveTab] = useState<
+    "kyc" | "withdrawals" | "recharge"
+  >("recharge");
   const [users, setUsers] = useState([]);
   const [error, setError] = useState<string | null>(null);
   const [kycRequests, setKycRequests] = useState<KYCRequest[]>([]);
@@ -175,27 +176,29 @@ const Dashboard = () => {
     };
 
     const fetchRecharges = async () => {
-        try {
-          const response = await getAllRecharges();
-          console.log('Recharge Response:', response); // Debug log
-          
-          // Check if response has the correct structure
-          if (response && Array.isArray(response)) {
-            const successfulRecharge = response.filter((recharge) => recharge.status === "success")
-            setRecharges(successfulRecharge.slice(0,5));
-          } else if (response && response.recharges) {
-            setRecharges(response.recharges);
-          } else {
-            console.error('Unexpected response structure:', response);
-            toast.error('Invalid response format');
-          }
-        } catch (error) {
-          console.error('Fetch error:', error);
-          toast.error('Failed to fetch recharges');
-        }
-      };
+      try {
+        const response = await getAllRecharges();
+        console.log("Recharge Response:", response); // Debug log
 
-    fetchKYCRequests();
+        // Check if response has the correct structure
+        if (response && Array.isArray(response.data)) {
+          const successfulRecharge = response.data.filter(
+            (recharge: any) => recharge.status === "success"
+          );
+          setRecharges(successfulRecharge.slice(0, 5));
+        } else if (response && response.recharges) {
+          setRecharges(response.recharges);
+        } else {
+          console.error("Unexpected response structure:", response);
+          toast.error("Invalid response format");
+        }
+      } catch (error) {
+        console.error("Fetch error:", error);
+        toast.error("Failed to fetch recharges");
+      }
+    };
+
+    // fetchKYCRequests();
     fetchWithdrawalRequests();
     fetchTodayTotalTransaction();
     fetchRecharges();
@@ -250,7 +253,6 @@ const Dashboard = () => {
                 <h2 className="text-3xl font-bold text-white">
                   {totalUsers?.toLocaleString()}
                 </h2>
-               
               </div>
               <div className="p-3 bg-purple-500/20 rounded-xl">
                 <Users className="w-8 h-8 text-purple-400" />
@@ -382,67 +384,74 @@ const Dashboard = () => {
                 </table>
               )}
             </div> */}
-            {activeTab === "recharge" ? (
-                <div className="bg-[#252547] rounded-xl border border-purple-500/10 p-4 shadow-lg">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="text-left border-b border-purple-500/10 text-sm text-gray-300">
-                          <th className="pb-4 font-medium">Order ID</th>
-                          <th className="pb-4 font-medium">User ID</th>
-                          <th className="pb-4 font-medium">Amount</th>
-                          <th className="pb-4 font-medium">Type</th>
-                          <th className="pb-4 font-medium">Mode</th>
-                          <th className="pb-4 font-medium">Status</th>
-                          <th className="pb-4 font-medium">Date</th>
-                          <th className="pb-4 font-medium">Time</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {recharges && recharges.length > 0 ? (
-                          recharges.map((recharge) => (
-                            <tr
-                              key={recharge.recharge_id}
-                              className="border-b border-purple-500/10 hover:bg-purple-500/5 transition-colors text-white"
+          {activeTab === "recharge" ? (
+            <div className="bg-[#252547] rounded-xl border border-purple-500/10 p-4 shadow-lg">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="text-left border-b border-purple-500/10 text-sm text-gray-300">
+                      <th className="pb-4 font-medium">Order ID</th>
+                      <th className="pb-4 font-medium">User ID</th>
+                      <th className="pb-4 font-medium">Amount</th>
+                      <th className="pb-4 font-medium">Type</th>
+                      <th className="pb-4 font-medium">Mode</th>
+                      <th className="pb-4 font-medium">Status</th>
+                      <th className="pb-4 font-medium">Date</th>
+                      <th className="pb-4 font-medium">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {recharges && recharges.length > 0 ? (
+                      recharges.map((recharge) => (
+                        <tr
+                          key={recharge.recharge_id}
+                          className="border-b border-purple-500/10 hover:bg-purple-500/5 transition-colors text-white"
+                        >
+                          <td className="py-4 font-medium">
+                            {recharge.order_id}
+                          </td>
+                          <td className="py-4">{recharge.userId}</td>
+                          <td className="py-4 text-purple-400 font-medium">
+                            {recharge.type === "INR" ? "₹" : "$"}{" "}
+                            {recharge.amount}
+                          </td>
+                          <td className="py-4">{recharge.type}</td>
+                          <td className="py-4">{recharge.mode}</td>
+                          <td className="py-4">
+                            <span
+                              className={`px-3 py-1.5 rounded-full text-sm font-medium ${
+                                recharge.status.toLowerCase() === "success"
+                                  ? "bg-green-500/20 text-green-400"
+                                  : recharge.status.toLowerCase() === "failed"
+                                  ? "bg-red-500/20 text-red-400"
+                                  : "bg-yellow-500/20 text-yellow-400"
+                              }`}
                             >
-                              <td className="py-4 font-medium">{recharge.order_id}</td>
-                              <td className="py-4">{recharge.userId}</td>
-                              <td className="py-4 text-purple-400 font-medium">
-                                {recharge.type === "INR" ? "₹" : "$"} {recharge.amount}
-                              </td>
-                              <td className="py-4">{recharge.type}</td>
-                              <td className="py-4">{recharge.mode}</td>
-                              <td className="py-4">
-                                <span
-                                  className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-                                    recharge.status.toLowerCase() === "success"
-                                      ? "bg-green-500/20 text-green-400"
-                                      : recharge.status.toLowerCase() === "failed"
-                                      ? "bg-red-500/20 text-red-400"
-                                      : "bg-yellow-500/20 text-yellow-400"
-                                  }`}
-                                >
-                                  {recharge.status}
-                                </span>
-                              </td>
-                              <td className="py-4 text-gray-400">
-                                {new Date(recharge.date).toLocaleDateString()}
-                              </td>
-                              <td className="py-4 text-gray-400">{recharge.time}</td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td colSpan={8} className="py-4 text-center text-gray-400">
-                              No recharges request found
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
+                              {recharge.status}
+                            </span>
+                          </td>
+                          <td className="py-4 text-gray-400">
+                            {new Date(recharge.date).toLocaleDateString()}
+                          </td>
+                          <td className="py-4 text-gray-400">
+                            {recharge.time}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={8}
+                          className="py-4 text-center text-gray-400"
+                        >
+                          No recharges request found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               {loadingWithdrawals ? (
