@@ -1,15 +1,23 @@
-import axios from 'axios';
-import { baseUrl } from '../config/server';
+import axios from "axios";
+import { baseUrl } from "../config/server";
 
 // Get all recharges
-export const getAllRecharges = async () => {
+export const getAllRecharges = async (page = 1, limit = 10) => {
   try {
-    const response = await axios.get(`${baseUrl}/api/recharge/get-all-recharges`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+    const response = await axios.get(
+      `${baseUrl}/api/recharge/get-all-recharges`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        params: {
+          page,
+          limit,
+        },
       }
-    });
+    );
+
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
@@ -19,14 +27,41 @@ export const getAllRecharges = async () => {
 // Get recharge details by order ID
 export const getRechargeByOrderId = async (orderId) => {
   try {
-    const response = await axios.get(`${baseUrl}/api/recharge/recharge-detail/${orderId}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+    const response = await axios.get(
+      `${baseUrl}/api/recharge/recharge-detail/${orderId}`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       }
-    });
+    );
     return response.data;
   } catch (error) {
     throw error.response?.data || error.message;
   }
-}; 
+};
+
+// Get recharges sorted by type & mode
+export const getSortedRecharges = async (type, mode, page = 1, limit = 10) => {
+  try {
+    const response = await axios.get(
+      `${baseUrl}/api/recharge/get-all-recharges/sort`,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        params: {
+          type, // e.g. USDT
+          mode, // e.g. upay
+          page,
+          limit,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error.message;
+  }
+};
