@@ -789,6 +789,8 @@ const Withdrawals = () => {
                       <th className="px-6 py-4">User ID</th>
                       <th className="px-6 py-4">User</th>
                       <th className="px-6 py-4">Amount</th>
+                      <th className="px-6 py-4">Opening Balance</th>
+                      <th className="px-6 py-4">Remaining Balance</th>
                       <th className="px-6 py-4">Method</th>
                       <th className="px-6 py-4">Details</th>
                       <th className="px-6 py-4">Date</th>
@@ -810,7 +812,21 @@ const Withdrawals = () => {
                         </td>
                         <td className="px-6 py-4">
                           {formatAmount(
-                            withdrawal.amount,
+                            withdrawal.amountRequested,
+                            withdrawal.cryptoname,
+                            conversionRate?.rate
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          {formatAmount(
+                            withdrawal?.walletBalance?.before,
+                            withdrawal.cryptoname,
+                            conversionRate?.rate
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          {formatAmount(
+                            withdrawal?.walletBalance?.after,
                             withdrawal.cryptoname,
                             conversionRate?.rate
                           )}
@@ -828,9 +844,19 @@ const Withdrawals = () => {
                               : "BANK TRANSFER"}
                           </span>
                         </td>
-                        <td className="px-6 py-4">
+                        <td
+                          className="px-6 py-4 max-w-[150px] truncate"
+                          title={
+                            "walletAddress" in withdrawal.withdrawalDetails
+                              ? withdrawal.withdrawalDetails.walletAddress ||
+                                "N/A"
+                              : withdrawal.withdrawalDetails.accountNumber ||
+                                "N/A"
+                          }
+                        >
                           {formatAccountDetails(withdrawal.withdrawalDetails)}
                         </td>
+
                         <td className="px-6 py-4">
                           {withdrawal.requestDate
                             ? formatDate(withdrawal.requestDate)
