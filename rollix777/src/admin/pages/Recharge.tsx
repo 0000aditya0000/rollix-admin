@@ -115,22 +115,52 @@ function Recharge() {
 
       console.log("Recharge Response:", response);
 
-      if (response && Array.isArray(response.data)) {
-        setRecharges(response.data);
-        setTotalPages(response.totalPages || 1);
-        setTotalItems(response.totalRecharges || response.data.length);
-      } else if (response && response.recharges) {
-        setRecharges(response.recharges);
-        setTotalPages(response.totalPages || 1);
-        setTotalItems(response.totalRecharges || response.data.length);
-        setTotalRecharges(response.totalRecharges || response.data.length);
+      // Handle different possible response structures
+      if (response && response.success !== false) {
+        // Case 1: response.data is an array
+        if (response.data && Array.isArray(response.data)) {
+          setRecharges(response.data);
+          setTotalPages(response.totalPages || 1);
+          setTotalItems(response.totalRecharges || response.data.length);
+        }
+        // Case 2: response.recharges is an array
+        else if (response.recharges && Array.isArray(response.recharges)) {
+          setRecharges(response.recharges);
+          setTotalPages(response.totalPages || 1);
+          setTotalItems(response.totalRecharges || response.recharges.length);
+        }
+        // Case 3: response itself is an array
+        else if (Array.isArray(response)) {
+          setRecharges(response);
+          setTotalPages(1);
+          setTotalItems(response.length);
+        }
+        // Case 4: response has a different structure but contains data
+        else if (response && typeof response === 'object') {
+          // Try to find the data array in the response
+          const dataArray = response.data || response.recharges || response.records || response.items;
+          if (Array.isArray(dataArray)) {
+            setRecharges(dataArray);
+            setTotalPages(response.totalPages || response.pages || 1);
+            setTotalItems(response.totalRecharges || response.total || dataArray.length);
+          } else {
+            console.error("No valid data array found in response:", response);
+            toast.error("Invalid response format");
+          }
+        } else {
+          console.error("Unexpected response structure:", response);
+          toast.error("Invalid response format");
+        }
       } else {
-        console.error("Unexpected response structure:", response);
-        toast.error("Invalid response format");
+        // Handle error response
+        const errorMessage = response?.message || "Failed to fetch recharges";
+        console.error("API Error:", response);
+        toast.error(errorMessage);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Fetch error:", error);
-      toast.error("Failed to fetch recharges");
+      const errorMessage = error?.message || "Failed to fetch recharges";
+      toast.error(errorMessage);
     }
   };
 
@@ -145,17 +175,33 @@ function Recharge() {
       const response = await getRechargeByOrderId(searchOrderId);
       console.log("Search Response:", response);
 
-      if (response && response.recharge) {
-        setSearchResult(response.recharge);
-      } else if (response) {
-        setSearchResult(response);
+      // Handle different possible response structures for search
+      if (response && response.success !== false) {
+        // Case 1: response.recharge contains the data
+        if (response.recharge) {
+          setSearchResult(response.recharge);
+        }
+        // Case 2: response itself contains the recharge data
+        else if (response && typeof response === 'object') {
+          setSearchResult(response);
+        }
+        // Case 3: response.data contains the recharge data
+        else if (response.data) {
+          setSearchResult(response.data);
+        } else {
+          console.error("No valid recharge data found in response:", response);
+          toast.error("Invalid response format");
+        }
       } else {
-        console.error("Unexpected search response:", response);
-        toast.error("Invalid response format");
+        // Handle error response
+        const errorMessage = response?.message || "Failed to fetch recharge details";
+        console.error("Search API Error:", response);
+        toast.error(errorMessage);
       }
     } catch (error: any) {
       console.error("Search error:", error);
-      toast.error(error.message || "Failed to fetch recharge details");
+      const errorMessage = error?.message || "Failed to fetch recharge details";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

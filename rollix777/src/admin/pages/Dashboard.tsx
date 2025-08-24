@@ -177,24 +177,57 @@ const Dashboard = () => {
 
     const fetchRecharges = async () => {
       try {
-        const response = await getAllRecharges();
+        const response = await getAllRecharges(1, 5); // Get first page with 5 records
         console.log("Recharge Response:", response); // Debug log
 
-        // Check if response has the correct structure
-        if (response && Array.isArray(response.data)) {
-          const successfulRecharge = response.data.filter(
+        // Handle different possible response structures
+        if (response && response.success !== false) {
+          let rechargeData: any[] = [];
+          
+          // Case 1: response.data is an array
+          if (response.data && Array.isArray(response.data)) {
+            rechargeData = response.data;
+          }
+          // Case 2: response.recharges is an array
+          else if (response.recharges && Array.isArray(response.recharges)) {
+            rechargeData = response.recharges;
+          }
+          // Case 3: response itself is an array
+          else if (Array.isArray(response)) {
+            rechargeData = response;
+          }
+          // Case 4: response has a different structure but contains data
+          else if (response && typeof response === 'object') {
+            // Try to find the data array in the response
+            const dataArray = response.data || response.recharges || response.records || response.items;
+            if (Array.isArray(dataArray)) {
+              rechargeData = dataArray;
+            } else {
+              console.error("No valid data array found in response:", response);
+              toast.error("Invalid response format");
+              return;
+            }
+          } else {
+            console.error("Unexpected response structure:", response);
+            toast.error("Invalid response format");
+            return;
+          }
+
+          // Filter successful recharges and take first 5
+          const successfulRecharge = rechargeData.filter(
             (recharge: any) => recharge.status === "success"
           );
           setRecharges(successfulRecharge.slice(0, 5));
-        } else if (response && response.recharges) {
-          setRecharges(response.recharges);
         } else {
-          console.error("Unexpected response structure:", response);
-          toast.error("Invalid response format");
+          // Handle error response
+          const errorMessage = response?.message || "Failed to fetch recharges";
+          console.error("API Error:", response);
+          toast.error(errorMessage);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Fetch error:", error);
-        toast.error("Failed to fetch recharges");
+        const errorMessage = error?.message || "Failed to fetch recharges";
+        toast.error(errorMessage);
       }
     };
 

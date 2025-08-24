@@ -2,7 +2,7 @@ import axios from "axios";
 import { baseUrl } from "../config/server";
 
 // Get all recharges
-export const getAllRecharges = async (page = 1, limit = 10) => {
+export const getAllRecharges = async (page , limit ) => {
   try {
     const response = await axios.get(
       `${baseUrl}/api/recharge/get-all-recharges`,
