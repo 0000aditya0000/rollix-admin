@@ -804,9 +804,7 @@ const Withdrawals = () => {
                         key={withdrawal.withdrawalId}
                         className="border-b border-[#1e1e3f] hover:bg-[#2f2f5a]"
                       >
-                        <td className="px-6 py-4">
-                          #{withdrawal.withdrawalId}
-                        </td>
+                        <td className="px-6 py-4">#{withdrawal.user.userId}</td>
                         <td className="px-6 py-4">
                           {formatUserInfo(withdrawal.user)}
                         </td>
