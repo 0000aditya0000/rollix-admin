@@ -177,7 +177,7 @@ const Dashboard = () => {
 
     const fetchRecharges = async () => {
       try {
-        const response = await getAllRecharges(1, 5, "success"); // Get first page with 5 records
+        const response = await getAllRecharges(1, 1000); // Get all records to sort by date
         console.log("Recharge Response:", response); // Debug log
 
         // Handle different possible response structures
@@ -217,11 +217,29 @@ const Dashboard = () => {
             return;
           }
 
-          // Filter successful recharges and take first 5
-          const successfulRecharge = rechargeData.filter(
-            (recharge: any) => recharge.status === "success"
+          // Filter successful recharges first
+          const successfulRecharges = rechargeData.filter(
+            (recharge: any) => recharge.status.toLowerCase() === "success"
           );
-          setRecharges(successfulRecharge.slice(0, 5));
+
+          // Sort by date (latest first) and take the first 5 records
+          const sortedRecharges = successfulRecharges.sort((a: any, b: any) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+            
+            // First sort by date (most recent first)
+            if (dateA.getTime() !== dateB.getTime()) {
+              return dateB.getTime() - dateA.getTime();
+            }
+            
+            // If dates are the same, sort by time (most recent first)
+            const timeA = a.time || "00:00:00";
+            const timeB = b.time || "00:00:00";
+            return timeB.localeCompare(timeA);
+          });
+
+          // Take the latest 5 successful records
+          setRecharges(sortedRecharges.slice(0, 5));
         } else {
           // Handle error response
           const errorMessage = response?.message || "Failed to fetch recharges";

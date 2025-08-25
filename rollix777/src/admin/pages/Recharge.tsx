@@ -73,6 +73,7 @@ function Recharge() {
   const sortModeOptions = [
     { value: "apay", label: "Sort by APAY" },
     { value: "sunpay", label: "Sort by Sunpay" },
+    { value: "watchpay", label: "Sort by Watchpay" },
   ];
 
   const sortByTypeOptions = [
@@ -94,8 +95,8 @@ function Recharge() {
     );
   };
 
-  const sortDataByDate = (data) => {
-    return data.sort((a, b) => {
+  const sortDataByDate = (data: Recharge[]) => {
+    return data.sort((a: Recharge, b: Recharge) => {
       const dateA = new Date(a.date);
       const dateB = new Date(b.date);
 
@@ -111,29 +112,20 @@ function Recharge() {
     });
   };
 
+  // Initial data load on component mount
   useEffect(() => {
     fetchRecharges();
-  }, [activeSortMode, activeSortType, activeFilter, currentPage]);
+  }, []); // Only run once on component mount
+
+  // Commented out API calls for filter changes - now using frontend-only filtering
+  // useEffect(() => {
+  //   fetchRecharges();
+  // }, [activeSortMode, activeSortType, activeFilter, currentPage]);
 
   const fetchRecharges = async () => {
     try {
-      let response;
-
-      if (activeSortMode || activeSortType) {
-        response = await getSortedRecharges(
-          activeSortType || "",
-          activeSortMode || "",
-          currentPage,
-          recordsPerPage,
-          activeFilter !== "all" ? activeFilter : undefined
-        );
-      } else {
-        response = await getAllRecharges(
-          currentPage,
-          recordsPerPage,
-          activeFilter !== "all" ? activeFilter : undefined
-        );
-      }
+      // Only fetch all data without filters on initial load
+      const response = await getAllRecharges(1, 1000); // Fetch all data
 
       console.log("Recharge Response:", response);
 
@@ -142,20 +134,20 @@ function Recharge() {
         // Case 1: response.data is an array
         if (response.data && Array.isArray(response.data)) {
           setRecharges(sortDataByDate([...response.data]));
-          setTotalPages(response.totalPages || 1);
-          setTotalItems(response.totalRecharges || response.data.length);
+          setTotalItems(response.data.length);
+          setTotalPages(Math.ceil(response.data.length / recordsPerPage));
         }
         // Case 2: response.recharges is an array
         else if (response.recharges && Array.isArray(response.recharges)) {
           setRecharges(sortDataByDate([...response.recharges]));
-          setTotalPages(response.totalPages || 1);
-          setTotalItems(response.totalRecharges || response.recharges.length);
+          setTotalItems(response.recharges.length);
+          setTotalPages(Math.ceil(response.recharges.length / recordsPerPage));
         }
         // Case 3: response itself is an array
         else if (Array.isArray(response)) {
           setRecharges(sortDataByDate([...response]));
-          setTotalPages(1);
           setTotalItems(response.length);
+          setTotalPages(Math.ceil(response.length / recordsPerPage));
         }
         // Case 4: response has a different structure but contains data
         else if (response && typeof response === "object") {
@@ -167,10 +159,8 @@ function Recharge() {
             response.items;
           if (Array.isArray(dataArray)) {
             setRecharges(sortDataByDate([...dataArray]));
-            setTotalPages(response.totalPages || response.pages || 1);
-            setTotalItems(
-              response.totalRecharges || response.total || dataArray.length
-            );
+            setTotalItems(dataArray.length);
+            setTotalPages(Math.ceil(dataArray.length / recordsPerPage));
           } else {
             console.error("No valid data array found in response:", response);
             toast.error("Invalid response format");
@@ -241,17 +231,45 @@ function Recharge() {
     console.log("Current recharges:", recharges);
   }, [recharges]);
 
+  // Note: API calls for filtering have been commented out and replaced with frontend-only filtering
+  // The search functionality still uses API calls as it wasn't part of the modification request
+
+  // Frontend-only filtering logic
   const filteredRecharges = recharges.filter((recharge) => {
     if (activeFilter === "all") return true;
     return recharge.status.toLowerCase() === activeFilter;
   });
+
+  // Apply sorting filters
+  const sortedAndFilteredRecharges = filteredRecharges.filter((recharge) => {
+    // Filter by sort mode (apay/sunpay)
+    if (activeSortMode && recharge.mode.toLowerCase() !== activeSortMode.toLowerCase()) {
+      return false;
+    }
+    // Filter by sort type (INR/USDT)
+    if (activeSortType && recharge.type !== activeSortType) {
+      return false;
+    }
+    return true;
+  });
+
+  // Pagination for frontend filtering
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const endIndex = startIndex + recordsPerPage;
+  const paginatedRecharges = sortedAndFilteredRecharges.slice(startIndex, endIndex);
+
+  // Update total items and pages based on filtered results
+  useEffect(() => {
+    setTotalItems(sortedAndFilteredRecharges.length);
+    setTotalPages(Math.ceil(sortedAndFilteredRecharges.length / recordsPerPage));
+  }, [sortedAndFilteredRecharges.length]);
 
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(Math.min(page, totalPages));
   };
 
-  console.log(filteredRecharges, "recharge");
+  console.log(paginatedRecharges, "recharge");
 
   const renderPagination = () => {
     if (totalPages <= 1) return null;
@@ -515,8 +533,8 @@ function Recharge() {
                 </tr>
               </thead>
               <tbody>
-                {filteredRecharges && filteredRecharges.length > 0 ? (
-                  filteredRecharges.map((recharge) => (
+                {paginatedRecharges && paginatedRecharges.length > 0 ? (
+                  paginatedRecharges.map((recharge) => (
                     <tr
                       key={recharge.recharge_id}
                       className="border-b border-purple-500/10 hover:bg-purple-500/5 transition-colors"
