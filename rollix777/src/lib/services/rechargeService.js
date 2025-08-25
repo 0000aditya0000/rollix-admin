@@ -2,7 +2,7 @@ import axios from "axios";
 import { baseUrl } from "../config/server";
 
 // Get all recharges
-export const getAllRecharges = async (page , limit ) => {
+export const getAllRecharges = async (page, limit, status) => {
   try {
     const response = await axios.get(
       `${baseUrl}/api/recharge/get-all-recharges`,
@@ -14,6 +14,7 @@ export const getAllRecharges = async (page , limit ) => {
         params: {
           page,
           limit,
+          ...(status ? { status } : {}),
         },
       }
     );
@@ -43,7 +44,13 @@ export const getRechargeByOrderId = async (orderId) => {
 };
 
 // Get recharges sorted by type & mode
-export const getSortedRecharges = async (type, mode, page = 1, limit = 10) => {
+export const getSortedRecharges = async (
+  type,
+  mode,
+  page = 1,
+  limit = 10,
+  status
+) => {
   try {
     const response = await axios.get(
       `${baseUrl}/api/recharge/get-all-recharges/sort`,
@@ -57,6 +64,7 @@ export const getSortedRecharges = async (type, mode, page = 1, limit = 10) => {
           mode, // e.g. upay
           page,
           limit,
+          ...(status ? { status } : {}),
         },
       }
     );

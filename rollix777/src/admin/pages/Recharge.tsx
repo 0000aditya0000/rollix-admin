@@ -124,10 +124,15 @@ function Recharge() {
           activeSortType || "",
           activeSortMode || "",
           currentPage,
-          recordsPerPage
+          recordsPerPage,
+          activeFilter !== "all" ? activeFilter : undefined
         );
       } else {
-        response = await getAllRecharges(currentPage, recordsPerPage);
+        response = await getAllRecharges(
+          currentPage,
+          recordsPerPage,
+          activeFilter !== "all" ? activeFilter : undefined
+        );
       }
 
       console.log("Recharge Response:", response);
