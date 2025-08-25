@@ -94,6 +94,23 @@ function Recharge() {
     );
   };
 
+  const sortDataByDate = (data) => {
+    return data.sort((a, b) => {
+      const dateA = new Date(a.date);
+      const dateB = new Date(b.date);
+
+      // First sort by date (most recent first)
+      if (dateA.getTime() !== dateB.getTime()) {
+        return dateB.getTime() - dateA.getTime();
+      }
+
+      // If dates are the same, sort by time (most recent first)
+      const timeA = a.time || "00:00:00";
+      const timeB = b.time || "00:00:00";
+      return timeB.localeCompare(timeA);
+    });
+  };
+
   useEffect(() => {
     fetchRecharges();
   }, [activeSortMode, activeSortType, activeFilter, currentPage]);
@@ -119,30 +136,36 @@ function Recharge() {
       if (response && response.success !== false) {
         // Case 1: response.data is an array
         if (response.data && Array.isArray(response.data)) {
-          setRecharges(response.data);
+          setRecharges(sortDataByDate([...response.data]));
           setTotalPages(response.totalPages || 1);
           setTotalItems(response.totalRecharges || response.data.length);
         }
         // Case 2: response.recharges is an array
         else if (response.recharges && Array.isArray(response.recharges)) {
-          setRecharges(response.recharges);
+          setRecharges(sortDataByDate([...response.recharges]));
           setTotalPages(response.totalPages || 1);
           setTotalItems(response.totalRecharges || response.recharges.length);
         }
         // Case 3: response itself is an array
         else if (Array.isArray(response)) {
-          setRecharges(response);
+          setRecharges(sortDataByDate([...response]));
           setTotalPages(1);
           setTotalItems(response.length);
         }
         // Case 4: response has a different structure but contains data
-        else if (response && typeof response === 'object') {
+        else if (response && typeof response === "object") {
           // Try to find the data array in the response
-          const dataArray = response.data || response.recharges || response.records || response.items;
+          const dataArray =
+            response.data ||
+            response.recharges ||
+            response.records ||
+            response.items;
           if (Array.isArray(dataArray)) {
-            setRecharges(dataArray);
+            setRecharges(sortDataByDate([...dataArray]));
             setTotalPages(response.totalPages || response.pages || 1);
-            setTotalItems(response.totalRecharges || response.total || dataArray.length);
+            setTotalItems(
+              response.totalRecharges || response.total || dataArray.length
+            );
           } else {
             console.error("No valid data array found in response:", response);
             toast.error("Invalid response format");
@@ -182,7 +205,7 @@ function Recharge() {
           setSearchResult(response.recharge);
         }
         // Case 2: response itself contains the recharge data
-        else if (response && typeof response === 'object') {
+        else if (response && typeof response === "object") {
           setSearchResult(response);
         }
         // Case 3: response.data contains the recharge data
@@ -194,7 +217,8 @@ function Recharge() {
         }
       } else {
         // Handle error response
-        const errorMessage = response?.message || "Failed to fetch recharge details";
+        const errorMessage =
+          response?.message || "Failed to fetch recharge details";
         console.error("Search API Error:", response);
         toast.error(errorMessage);
       }

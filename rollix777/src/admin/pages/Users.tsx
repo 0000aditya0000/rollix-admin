@@ -10,9 +10,12 @@ import {
   Mail,
   Phone,
   Calendar,
+  Download,
 } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const Users = () => {
   const navigate = useNavigate();
@@ -126,6 +129,46 @@ const Users = () => {
     return new Date(dateStr).toLocaleString("en-IN", {
       dateStyle: "medium",
     });
+  };
+
+  const exportUsersToExcel = () => {
+    const worksheetData = users.map((user: any) => {
+      // Convert wallets array into an object { CP: 0, INR: 3733.34, ... }
+      const walletData = user.wallets.reduce((acc: any, wallet: any) => {
+        acc[wallet.cryptoname] = wallet.balance;
+        return acc;
+      }, {});
+
+      return {
+        ID: user.id,
+        Username: user.username,
+        Name: user.name,
+        Email: user.email,
+        Phone: user.phone,
+        "Referral Code": user.my_referral_code,
+        "Referred By": user.referred_by || "-",
+        "Created At": new Date(user.created_at).toLocaleDateString("en-IN", {
+          dateStyle: "medium",
+        }),
+        "Withdrawal Blocked": user.is_withdrawal_blocked ? "Yes" : "No",
+        "Login Disabled": user.is_login_disabled ? "Yes" : "No",
+        // Spread wallet balances into separate columns
+        ...walletData,
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const fileData = new Blob([excelBuffer], {
+      type: "application/octet-stream",
+    });
+    saveAs(fileData, "users.xlsx");
   };
 
   // Popup Component for Adding User
@@ -397,13 +440,23 @@ const Users = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-white">Users</h1>
-        <button
-          onClick={() => setShowPopup(true)}
-          className="py-2 px-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg text-white flex items-center gap-2 hover:opacity-90 transition-opacity"
-        >
-          <Plus size={18} />
-          <span>Add User</span>
-        </button>
+        <div className="flex">
+          <button
+            onClick={() => setShowPopup(true)}
+            className="py-2 px-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg text-white flex items-center gap-2 hover:opacity-90 transition-opacity"
+          >
+            <Plus size={18} />
+            <span>Add User</span>
+          </button>
+
+          <button
+            onClick={() => exportUsersToExcel()}
+            className="py-2 px-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg text-white flex items-center gap-2 hover:opacity-90 transition-opacity ml-4"
+          >
+            <Download size={18} />
+            <span>Download</span>
+          </button>
+        </div>
       </div>
 
       {showPopup && (
