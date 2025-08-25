@@ -177,13 +177,13 @@ const Dashboard = () => {
 
     const fetchRecharges = async () => {
       try {
-        const response = await getAllRecharges(1, 5); // Get first page with 5 records
+        const response = await getAllRecharges(1, 5, "success"); // Get first page with 5 records
         console.log("Recharge Response:", response); // Debug log
 
         // Handle different possible response structures
         if (response && response.success !== false) {
           let rechargeData: any[] = [];
-          
+
           // Case 1: response.data is an array
           if (response.data && Array.isArray(response.data)) {
             rechargeData = response.data;
@@ -197,9 +197,13 @@ const Dashboard = () => {
             rechargeData = response;
           }
           // Case 4: response has a different structure but contains data
-          else if (response && typeof response === 'object') {
+          else if (response && typeof response === "object") {
             // Try to find the data array in the response
-            const dataArray = response.data || response.recharges || response.records || response.items;
+            const dataArray =
+              response.data ||
+              response.recharges ||
+              response.records ||
+              response.items;
             if (Array.isArray(dataArray)) {
               rechargeData = dataArray;
             } else {
