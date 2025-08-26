@@ -32,51 +32,51 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const location = useLocation();
 
   const menuItems = [
-    { icon: <LayoutDashboard size={20} />, label: "Dashboard", path: "/admin" },
-    { icon: <Users size={20} />, label: "Users", path: "/admin/users" },
+    { icon: <LayoutDashboard size={20} />, label: "Dashboard", path: "/" },
+    { icon: <Users size={20} />, label: "Users", path: "/users" },
     {
       icon: <CurrencyIcon size={20} />,
       label: "Rates Conversion",
-      path: "/admin/rate",
+      path: "/rate",
     },
     {
       icon: <CreditCard size={20} />,
       label: "Bank Accounts",
-      path: "/admin/bank-accounts",
+      path: "/bank-accounts",
     },
-    { icon: <Tag size={20} />, label: "Coupon", path: "/admin/coupon" },
+    { icon: <Tag size={20} />, label: "Coupon", path: "/coupon" },
     {
       icon: <CreditCard size={20} />,
       label: "Recharge",
-      path: "/admin/recharge",
+      path: "/recharge",
     },
     {
       icon: <ArrowDown size={20} />,
       label: "Withdrawals",
-      path: "/admin/withdrawals",
+      path: "/withdrawals",
     },
-    { icon: <BarChart3 size={20} />, label: "Reports", path: "/admin/reports" },
-    { icon: <Image size={20} />, label: "Sliders", path: "/admin/sliders" },
-    { icon: <Gamepad2 size={20} />, label: "Games", path: "/admin/games" },
+    { icon: <BarChart3 size={20} />, label: "Reports", path: "/reports" },
+    { icon: <Image size={20} />, label: "Sliders", path: "/sliders" },
+    { icon: <Gamepad2 size={20} />, label: "Games", path: "/games" },
     {
       icon: <MessageCircleQuestion size={20} />,
       label: "Query Management",
-      path: "/admin/query",
+      path: "/query",
     },
     {
       icon: <FileCheck size={20} />,
       label: "KYC Requests",
-      path: "/admin/kyc-requests",
+      path: "/kyc-requests",
     },
     {
       icon: <Shield size={20} />,
       label: "Login Activity",
-      path: "/admin/user-activity",
+      path: "/user-activity",
     },
     {
       icon: <Settings size={20} />,
       label: "Settings",
-      path: "/admin/settings",
+      path: "/settings",
     },
   ];
 

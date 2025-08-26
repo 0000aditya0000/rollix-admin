@@ -38,7 +38,7 @@ const AdminRoutes = () => {
         <Route path="kyc-requests" element={<KYCRequest />} />
         <Route path="user-activity" element={<UserActivity />} />
         {/* <Route path="settings" element={<Settings />} /> */}
-        <Route path="*" element={<Navigate to="/admin" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   );

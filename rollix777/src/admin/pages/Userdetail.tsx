@@ -274,7 +274,7 @@ const Userdetail = () => {
     <div className="w-full md:px-4 py-4 space-y-2 md:space-y-6">
       {/* Back Navigation Button */}
       <button
-        onClick={() => navigate("/admin/users")}
+        onClick={() => navigate("/users")}
         className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4 md:mb-6"
       >
         <ArrowLeft className="w-5 h-5 font-bold text-pink-600" />

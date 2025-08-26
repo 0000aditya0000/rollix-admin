@@ -28,18 +28,11 @@ function App() {
         {/* Add the referral route before other routes */}
         <Route path="/refer/:referralCode" element={<ReferralRedirect />} />
 
-        {/* Admin Routes - Full width */}
-        <Route path="/admin/*" element={<AdminRoutes />} />
+        {/* Legacy redirect from /admin/* to root-mounted admin */}
+        <Route path="/admin/*" element={<Navigate to="/" replace />} />
 
-        {/* Main App Routes - Modified for responsive width */}
-        <Route
-          path="/*"
-          element={
-           <div>
-            <h1>Welcome To Rollix Admin</h1>
-           </div>
-          }
-        />
+        {/* Admin Routes mounted at root */}
+        <Route path="/*" element={<AdminRoutes />} />
       </Routes>
     </BrowserRouter>
   );

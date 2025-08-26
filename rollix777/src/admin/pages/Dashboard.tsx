@@ -286,7 +286,7 @@ const Dashboard = () => {
   };
 
   const handleViewAllUsers = () => {
-    navigate("/admin/users");
+    navigate("/users");
   };
 
   if (error) {
