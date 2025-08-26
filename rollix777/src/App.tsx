@@ -29,7 +29,7 @@ function App() {
         <Route path="/refer/:referralCode" element={<ReferralRedirect />} />
 
         {/* Admin Routes - Full width */}
-        <Route path="/admin/*" element={<AdminRoutes />} />
+        <Route path="/*" element={<AdminRoutes />} />
 
         {/* Main App Routes - Modified for responsive width */}
         <Route
