@@ -170,6 +170,29 @@ export const updateWalletBalance = async (userId, balance, cryptoname) => {
   }
 };
 
+export const getAllTransactions = async (userId) => {
+  try {
+    const response = await fetch(`${baseUrl}/api/user/transactions/${userId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errordata = await response.json().catch(() => ({}));
+      throw new Error(
+        errordata.message || `HTTP error! status: ${response.status}`
+      );
+    }
+    return await response.json();
+  } catch (error) {
+    console.log("Error fetching Transaction history", error.message);
+    throw error;
+  }
+};
+
 export const fetchUserData = async (userId) => fetchUser(userId);
 export const fetchUserAllData = async (userId) => fetchAllUserData(userId);
 export const updateUserData = async (userId, formData) =>

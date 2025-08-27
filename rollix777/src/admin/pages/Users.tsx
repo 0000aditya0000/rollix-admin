@@ -105,6 +105,7 @@ const Users = () => {
   };
 
   const handleNameClick = (userId) => {
+    console.log(userId, "userId");
     navigate(`/admin/user-detail/${userId}`);
   };
 

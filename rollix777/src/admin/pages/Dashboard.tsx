@@ -226,12 +226,12 @@ const Dashboard = () => {
           const sortedRecharges = successfulRecharges.sort((a: any, b: any) => {
             const dateA = new Date(a.date);
             const dateB = new Date(b.date);
-            
+
             // First sort by date (most recent first)
             if (dateA.getTime() !== dateB.getTime()) {
               return dateB.getTime() - dateA.getTime();
             }
-            
+
             // If dates are the same, sort by time (most recent first)
             const timeA = a.time || "00:00:00";
             const timeB = b.time || "00:00:00";
@@ -286,7 +286,7 @@ const Dashboard = () => {
   };
 
   const handleViewAllUsers = () => {
-    navigate("/users");
+    navigate("/admin/users");
   };
 
   if (error) {
