@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import AdminLayout from "./AdminLayout";
 import Dashboard from "./pages/Dashboard";
 import Users from "./pages/Users";
@@ -19,9 +19,14 @@ import UserActivity from "./components/UserActivity";
 // import Settings from './pages/Settings';
 
 const AdminRoutes = () => {
+  const location = useLocation();
+
+  // Debug: Log current location
+  console.log("Current location:", location.pathname);
+
   return (
     <Routes>
-      <Route path="/" element={<AdminLayout />}>
+      <Route path="admin" element={<AdminLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="users" element={<Users />} />
         <Route path="bank-accounts" element={<BankAccounts />} />
@@ -38,7 +43,7 @@ const AdminRoutes = () => {
         <Route path="kyc-requests" element={<KYCRequest />} />
         <Route path="user-activity" element={<UserActivity />} />
         {/* <Route path="settings" element={<Settings />} /> */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/admin" replace />} />
       </Route>
     </Routes>
   );

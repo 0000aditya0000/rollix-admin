@@ -1,21 +1,25 @@
-import { BrowserRouter, Route, Routes, useLocation, Navigate } from "react-router-dom";
-import { Toaster } from 'react-hot-toast';
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+  useLocation,
+  Navigate,
+} from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import AdminRoutes from "./admin";
 import { useSelector } from "react-redux";
 import { RootState } from "./store";
 // Add new ReferralRedirect component
 const ReferralRedirect: React.FC = () => {
   const location = useLocation();
-  const referralCode = location.pathname.split('/refer/')[1];
-  
+  const referralCode = location.pathname.split("/refer/")[1];
+
   if (referralCode) {
-    localStorage.setItem('pendingReferralCode', referralCode);
+    localStorage.setItem("pendingReferralCode", referralCode);
   }
-  
+
   return <Navigate to="/" replace />;
 };
-
-
 
 function App() {
   const authenticated = useSelector(
@@ -29,7 +33,7 @@ function App() {
         <Route path="/refer/:referralCode" element={<ReferralRedirect />} />
 
         {/* Legacy redirect from /admin/* to root-mounted admin */}
-        <Route path="/admin/*" element={<Navigate to="/" replace />} />
+        {/* <Route path="/admin/*" element={<Navigate to="/" replace />} /> */}
 
         {/* Admin Routes mounted at root */}
         <Route path="/*" element={<AdminRoutes />} />

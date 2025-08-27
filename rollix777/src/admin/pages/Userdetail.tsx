@@ -16,11 +16,14 @@ import {
   ChevronDown,
   ChevronUp,
   Building,
+  ArrowDownCircle,
+  ArrowUpCircle,
 } from "lucide-react";
 import {
   fetchUserAllData,
   loginStatus,
   banWithdrawal,
+  getAllTransactions,
 } from "../../lib/services/userService";
 import { updateWalletBalance } from "../../lib/services/userService";
 import { useParams, useNavigate } from "react-router-dom";
@@ -87,11 +90,25 @@ const Userdetail = () => {
     bankAccounts: false,
     referrals: false,
     withdrawals: false,
+    deposits: false,
   });
   const [banUser, setBanUser] = useState<boolean>(false);
   const [banWithdrawalVal, setBanWithdrawalVal] = useState(false);
   const [editBalance, setEditBalance] = useState("");
   const [editingWallet, setEditingWallet] = useState<string | null>(null);
+  const [transactions, setTransactions] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const data = await getAllTransactions(userId);
+        setTransactions(data.transactions || []);
+      } catch (error) {
+        console.error("Error fetching transactions:", error);
+      }
+    };
+    fetchTransactions();
+  }, [userId]);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -111,6 +128,7 @@ const Userdetail = () => {
             referrals: response.data.referrals,
             withdrawals: response.data.withdrawals,
             kyc: response.data.kyc,
+            deposits: response.data.deposits,
           };
           setUserData(userData);
         } else {
@@ -151,6 +169,7 @@ const Userdetail = () => {
           referrals: refreshed.data.referrals,
           withdrawals: refreshed.data.withdrawals,
           kyc: refreshed.data.kyc,
+          deposits: refreshed.data.deposits,
         });
       }
       setEditingWallet(null);
@@ -255,6 +274,8 @@ const Userdetail = () => {
     );
   }
 
+  console.log(transactions, "transactions");
+
   if (!userData) {
     return (
       <div className="w-full h-[50vh] flex items-center justify-center">
@@ -274,7 +295,7 @@ const Userdetail = () => {
     <div className="w-full md:px-4 py-4 space-y-2 md:space-y-6">
       {/* Back Navigation Button */}
       <button
-        onClick={() => navigate("/users")}
+        onClick={() => navigate("/admin/users")}
         className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4 md:mb-6"
       >
         <ArrowLeft className="w-5 h-5 font-bold text-pink-600" />
@@ -823,6 +844,139 @@ const Userdetail = () => {
                   </table>
                 </div>
               )}
+            </div>
+          )}
+        </div>
+
+        {/* Deposit History Section */}
+        <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-2xl border border-purple-500/20 p-4 md:p-6">
+          <div
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => toggleSection("deposits")}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 md:p-3 bg-purple-500/10 rounded-xl">
+                <History className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
+              </div>
+              <h2 className="text-lg md:text-xl font-bold text-white">
+                Deposit History
+              </h2>
+            </div>
+            {expandedSections.deposits ? (
+              <ChevronUp className="w-5 h-5 text-purple-400" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-purple-400" />
+            )}
+          </div>
+
+          {expandedSections.deposits && (
+            <div className="mt-4">
+              <div
+                // key={referral.id}
+                className="p-4 bg-[#1A1A2E] rounded-xl border border-purple-500/10"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Total Deposit */}
+                  <div className="flex items-center gap-4 p-4 rounded-xl bg-[#1A1A2E] hover:bg-[#252547] transition-colors">
+                    <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                      <User className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium truncate">
+                        Total Deposit: {userData.deposits?.total_deposit || 0}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* First Deposit Amount + Date */}
+                  <div className="flex items-center gap-4 p-4 rounded-xl bg-[#1A1A2E] hover:bg-[#252547] transition-colors">
+                    <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                      <User className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium truncate">
+                        First Deposit Amount:{" "}
+                        {userData.deposits?.first_deposit_amount || 0}
+                      </p>
+                      <p className="text-sm text-gray-400">
+                        Date: {userData.deposits?.first_deposit_date || "N/A"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* totalBets amounts */}
+                  <div className="flex items-center gap-4 p-4 rounded-xl bg-[#1A1A2E] hover:bg-[#252547] transition-colors">
+                    <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                      <User className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium truncate">
+                        Total Bet Amount: {userData.bets?.total_bet_amount || 0}
+                      </p>
+                      {/* <p className="text-sm text-gray-400">
+                        Date: {userData.deposits?.first_deposit_date || "N/A"}
+                      </p> */}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 sm:p-6">
+                <div className="max-h-screen lg:max-h-[600px] overflow-y-auto">
+                  <div className="space-y-3 sm:space-y-4">
+                    {transactions.filter(
+                      (txn) =>
+                        txn.transaction_type === "recharge" &&
+                        txn.status.toLowerCase() === "approved"
+                    ).length > 0 ? (
+                      transactions
+                        .filter(
+                          (txn) =>
+                            txn.transaction_type === "recharge" &&
+                            txn.status.toLowerCase() === "approved"
+                        )
+                        .map((txn) => {
+                          const typeLabel = "Deposit";
+
+                          return (
+                            <div
+                              key={txn.id}
+                              className="flex items-center justify-between p-3 sm:p-4 bg-[#1A1A2E] rounded-lg sm:rounded-xl hover:bg-[#252547] transition-colors"
+                            >
+                              <div className="flex items-center gap-3 sm:gap-4">
+                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center bg-red-500/10">
+                                  <ArrowUpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
+                                </div>
+                                <div>
+                                  <p className="text-white font-medium text-base sm:text-lg">
+                                    {typeLabel}
+                                  </p>
+                                  <p className="text-xs sm:text-sm text-gray-400">
+                                    {txn.transaction_date}
+                                  </p>
+                                  <p className="text-xs sm:text-sm text-green-500">
+                                    Approved
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <span className="text-base sm:text-lg font-semibold text-green-500">
+                                  -₹{txn.amount}
+                                </span>
+                                <p className="text-xs sm:text-sm text-gray-400">
+                                  {txn.order_id}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })
+                    ) : (
+                      <div className="text-gray-400 text-center py-6">
+                        No successful Deposits found.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
