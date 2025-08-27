@@ -926,13 +926,13 @@ const Userdetail = () => {
                     {transactions.filter(
                       (txn) =>
                         txn.transaction_type === "recharge" &&
-                        txn.status.toLowerCase() === "approved"
+                        txn.status.toLowerCase() === "success"
                     ).length > 0 ? (
                       transactions
                         .filter(
                           (txn) =>
                             txn.transaction_type === "recharge" &&
-                            txn.status.toLowerCase() === "approved"
+                            txn.status.toLowerCase() === "success"
                         )
                         .map((txn) => {
                           const typeLabel = "Deposit";
@@ -954,7 +954,7 @@ const Userdetail = () => {
                                     {txn.transaction_date}
                                   </p>
                                   <p className="text-xs sm:text-sm text-green-500">
-                                    Approved
+                                    Success
                                   </p>
                                 </div>
                               </div>
