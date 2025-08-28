@@ -7,10 +7,12 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
+  Download,
 } from "lucide-react";
 import axios from "axios";
 import { baseUrl } from "../../lib/config/server";
 import { toast } from "react-hot-toast";
+import { exportWithdrawalsToExcel } from "../../lib/utils/exportToExcel";
 
 interface WithdrawalStatus {
   code: string;
@@ -760,6 +762,12 @@ const Withdrawals = () => {
               {label}
             </button>
           ))}
+          <button
+            onClick={() => exportWithdrawalsToExcel(withdrawals)}
+            className="py-2 px-4 rounded-lg text-white bg-purple-600"
+          >
+            <Download />
+          </button>
         </div>
       </div>
 
