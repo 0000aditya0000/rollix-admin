@@ -24,6 +24,7 @@ import {
   loginStatus,
   banWithdrawal,
   getAllTransactions,
+  getBetHistoryByGameType,
 } from "../../lib/services/userService";
 import { updateWalletBalance } from "../../lib/services/userService";
 import { useParams, useNavigate } from "react-router-dom";
@@ -91,12 +92,16 @@ const Userdetail = () => {
     referrals: false,
     withdrawals: false,
     deposits: false,
+    betHistory: false,
   });
   const [banUser, setBanUser] = useState<boolean>(false);
   const [banWithdrawalVal, setBanWithdrawalVal] = useState(false);
   const [editBalance, setEditBalance] = useState("");
   const [editingWallet, setEditingWallet] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [activeBetTab, setActiveBetTab] = useState("Wingo");
+  const [betHistories, setBetHistories] = useState<any[]>([]);
+  const [activeTimer, setActiveTimer] = useState(1);
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -147,6 +152,26 @@ const Userdetail = () => {
 
     loadUserData();
   }, [userId]);
+
+  useEffect(() => {
+    const fetchBetHistories = async () => {
+      try {
+        let gameType = activeBetTab.toLowerCase();
+        const response = await getBetHistoryByGameType(
+          gameType,
+          userId,
+          `${activeTimer}min`
+        );
+        setBetHistories(response || []);
+      } catch (error) {
+        console.error("Error fetching bet histories:", error);
+      }
+    };
+
+    if (expandedSections.betHistory && userId) {
+      fetchBetHistories();
+    }
+  }, [activeBetTab, expandedSections.betHistory, userId, activeTimer]);
 
   const handleAddWallet = async () => {
     if (!editingWallet) return;
@@ -274,7 +299,7 @@ const Userdetail = () => {
     );
   }
 
-  console.log(transactions, "transactions");
+  console.log(betHistories, "transactions");
 
   if (!userData) {
     return (
@@ -975,6 +1000,292 @@ const Userdetail = () => {
                       </div>
                     )}
                   </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Bet History Section */}
+        <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-2xl border border-purple-500/20 p-4 md:p-6">
+          <div
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => toggleSection("betHistory")}
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2 md:p-3 bg-purple-500/10 rounded-xl">
+                <History className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
+              </div>
+              <h2 className="text-lg md:text-xl font-bold text-white">
+                Bet History
+              </h2>
+            </div>
+            {expandedSections.betHistory ? (
+              <ChevronUp className="w-5 h-5 text-purple-400" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-purple-400" />
+            )}
+          </div>
+
+          {expandedSections.betHistory && (
+            <div className="mt-4">
+              {/* Tabs + Timer buttons in same row */}
+              <div className="flex items-center justify-between border-b border-purple-500/20 mb-4">
+                {/* Game Tabs */}
+                <div className="flex space-x-4">
+                  {["Wingo", "Wingo5D", "TRX", "Other"].map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setActiveBetTab(tab)}
+                      className={`px-4 py-2 text-sm font-medium rounded-t-lg ${
+                        activeBetTab === tab
+                          ? "bg-purple-500/20 text-purple-400 border-b-2 border-purple-500"
+                          : "text-gray-400 hover:text-purple-300"
+                      }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Timer Buttons */}
+                <div className="flex space-x-2">
+                  {[1, 3, 5, 10].map((min) => (
+                    <button
+                      key={min}
+                      onClick={() => setActiveTimer(min)}
+                      className={`px-3 py-1 text-xs md:text-sm rounded-lg border ${
+                        activeTimer === min
+                          ? "bg-purple-500/20 text-purple-400 border-purple-500"
+                          : "text-gray-400 border-purple-500/20 hover:text-purple-300"
+                      }`}
+                    >
+                      {min} min
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Tab Content */}
+              <div className="p-4 bg-[#1A1A2E] rounded-xl border border-purple-500/10">
+                <div className="max-h-[400px] overflow-y-auto">
+                  <>
+                    {activeBetTab === "Wingo" &&
+                      (betHistories?.betHistory?.length > 0 ? (
+                        <table className="w-full text-sm text-gray-300">
+                          <thead>
+                            <tr className="text-left border-b border-purple-500/20">
+                              <th className="py-2">ID</th>
+                              <th className="py-2">Period Number</th>
+                              <th className="py-2">Amount</th>
+                              <th className="py-2">Bet Type</th>
+                              <th className="py-2">Bet Value</th>
+                              <th className="py-2">Status</th>
+                              <th className="py-2">Payout</th>
+                              <th className="py-2">Date</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {betHistories?.betHistory?.map(
+                              (bet: any, index: any) => (
+                                <tr
+                                  key={index}
+                                  className="border-b border-purple-500/10"
+                                >
+                                  <td className="py-2">
+                                    BET-{bet.betId || "-"}
+                                  </td>
+                                  <td className="py-2">
+                                    {bet.periodNumber || "-"}
+                                  </td>
+                                  <td className="py-2">{bet.amount || "-"}</td>
+                                  <td className="py-2">{bet.betType || "-"}</td>
+                                  <td className="py-2">
+                                    {bet.betValue || "-"}
+                                  </td>
+                                  <td className="py-2">{bet.status || "-"}</td>
+                                  <td className="py-2">
+                                    {bet.amountReceived || "0"}
+                                  </td>
+                                  <td className="py-2">
+                                    {bet.date
+                                      ? new Date(bet.date).toLocaleString()
+                                      : "-"}
+                                  </td>
+                                </tr>
+                              )
+                            )}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <p className="text-gray-400 text-center py-4">
+                          No bet history found
+                        </p>
+                      ))}
+
+                    {activeBetTab === "Wingo5D" &&
+                      (betHistories?.bets?.length > 0 ? (
+                        <table className="w-full text-sm text-gray-300 table-auto">
+                          <thead>
+                            <tr className="text-left border-b border-purple-500/20">
+                              <th className="py-2 px-4 w-[60px]">ID</th>
+                              <th className="py-2 px-4 w-[120px]">
+                                Period Number
+                              </th>
+                              <th className="py-2 px-4">Position</th>
+                              <th className="py-2 px-4">Bet Type</th>
+                              <th className="py-2 px-4">Bet Value</th>
+                              <th className="py-2 px-4">Amount</th>
+                              <th className="py-2 px-4">Timer</th>
+                              <th className="py-2 px-4">Status</th>
+                              <th className="py-2 px-4">Date</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {betHistories?.bets?.map((bet: any, index: any) => (
+                              <tr
+                                key={index}
+                                className="border-b border-purple-500/10"
+                              >
+                                <td className="py-2 px-4">{bet.id || "-"}</td>
+                                <td className="py-2 px-4">
+                                  {bet.period_number || "-"}
+                                </td>
+                                <td className="py-2 px-4">
+                                  {bet.position || "-"}
+                                </td>
+                                <td className="py-2 px-4">
+                                  {bet.bet_type || "-"}
+                                </td>
+                                <td className="py-2 px-4">
+                                  {bet.bet_value || "-"}
+                                </td>
+                                <td className="py-2 px-4">
+                                  {bet.amount || "-"}
+                                </td>
+                                <td className="py-2 px-4">
+                                  {bet.timer || "-"}
+                                </td>
+                                <td
+                                  className={`py-2 px-4 ${
+                                    bet.status === "won"
+                                      ? "text-green-400 font-semibold"
+                                      : bet.status === "lost"
+                                      ? "text-red-400 font-semibold"
+                                      : ""
+                                  }`}
+                                >
+                                  {bet.status || "-"}
+                                </td>
+                                <td className="py-2 px-4">
+                                  {bet.created_at
+                                    ? new Date(bet.created_at).toLocaleString()
+                                    : "-"}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <p className="text-gray-400 text-center py-4">
+                          No bet history found
+                        </p>
+                      ))}
+
+                    {activeBetTab === "TRX" &&
+                      (betHistories?.bets?.length > 0 ? (
+                        <table className="w-full text-sm text-gray-300">
+                          <thead>
+                            <tr className="text-left border-b border-purple-500/20">
+                              <th className="py-2">#</th>
+                              <th className="py-2">Period Number</th>
+                              <th className="py-2">Bet Type</th>
+                              <th className="py-2">Bet Value</th>
+                              <th className="py-2">Amount</th>
+                              <th className="py-2">Timer</th>
+                              <th className="py-2">Status</th>
+                              <th className="py-2">Winning Amount</th>
+                              <th className="py-2">Date</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {betHistories?.bets?.map((bet: any, index: any) => (
+                              <tr
+                                key={index}
+                                className="border-b border-purple-500/10"
+                              >
+                                <td className="py-2">{index + 1}</td>
+                                <td className="py-2">
+                                  {bet.period_number || "-"}
+                                </td>
+                                <td className="py-2">{bet.bet_type || "-"}</td>
+                                <td className="py-2">{bet.bet_value || "-"}</td>
+                                <td className="py-2">{bet.amount || "-"}</td>
+                                <td className="py-2">{bet.timer || "-"}</td>
+                                <td className="py-2">{bet.status || "-"}</td>
+                                <td className="py-2">{bet.winnings || "-"}</td>
+                                <td className="py-2">
+                                  {bet.created_at
+                                    ? new Date(bet.created_at).toLocaleString()
+                                    : "-"}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <p className="text-gray-400 text-center py-4">
+                          No bet history found
+                        </p>
+                      ))}
+
+                    {activeBetTab === "Other" &&
+                      (betHistories?.transactions?.length > 0 ? (
+                        <table className="w-full text-sm text-gray-300">
+                          <thead>
+                            <tr className="text-left border-b border-purple-500/20">
+                              <th className="py-2">Transaction ID</th>
+                              <th className="py-2">Game ID</th>
+                              <th className="py-2">Session ID</th>
+                              <th className="py-2">Bet Amount</th>
+                              <th className="py-2">Winning Amount</th>
+                              <th className="py-2">Status</th>
+                              <th className="py-2">Date</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {betHistories?.transactions?.map((txn, index) => (
+                              <tr
+                                key={index}
+                                className="border-b border-purple-500/10"
+                              >
+                                <td className="py-2">
+                                  {txn.transaction_id || "-"}
+                                </td>
+                                <td className="py-2">{txn.gameId || "-"}</td>
+                                <td className="py-2">{txn.sessionId || "-"}</td>
+                                <td className="py-2">
+                                  {txn.bet_amount || "-"}
+                                </td>
+                                <td className="py-2">
+                                  {txn.winning_amount || "-"}
+                                </td>
+                                <td className="py-2">{txn.status || "-"}</td>
+                                <td className="py-2">
+                                  {txn.created_at
+                                    ? new Date(txn.created_at).toLocaleString()
+                                    : "-"}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <p className="text-gray-400 text-center py-4">
+                          No bet history found
+                        </p>
+                      ))}
+                  </>
                 </div>
               </div>
             </div>
