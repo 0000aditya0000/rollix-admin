@@ -708,7 +708,7 @@ const Userdetail = () => {
                         ) : (
                           <div className="text-sm text-white space-y-2 px-2 py-1">
                             <div>
-                              <strong>Bank Name:</strong>{" "}
+                              <strong>Account Holder Name:</strong>{" "}
                               {account.accountHolder || "N/A"}
                             </div>
                             <div>
