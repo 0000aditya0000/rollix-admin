@@ -8,6 +8,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  Download,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import {
@@ -16,6 +17,7 @@ import {
   getSortedRecharges,
 } from "../../lib/services/rechargeService";
 import { current } from "@reduxjs/toolkit";
+import { exportRechargesToExcel } from "../../lib/utils/exportToExcel";
 
 interface Recharge {
   recharge_id: number;
@@ -68,6 +70,9 @@ function Recharge() {
   const [totalRecharges, setTotalRecharges] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
   const recordsPerPage = 15;
 
   const sortModeOptions = [
@@ -235,15 +240,40 @@ function Recharge() {
   // The search functionality still uses API calls as it wasn't part of the modification request
 
   // Frontend-only filtering logic
+  // const filteredRecharges = recharges.filter((recharge) => {
+  //   if (activeFilter === "all") return true;
+  //   return recharge.status.toLowerCase() === activeFilter;
+  // });
+
   const filteredRecharges = recharges.filter((recharge) => {
-    if (activeFilter === "all") return true;
-    return recharge.status.toLowerCase() === activeFilter;
+    // existing status filter
+    if (
+      activeFilter !== "all" &&
+      recharge.status.toLowerCase() !== activeFilter
+    ) {
+      return false;
+    }
+
+    // ✅ new date filter
+    if (startDate || endDate) {
+      const rechargeDate = new Date(recharge.date).setHours(0, 0, 0, 0);
+      const start = startDate ? new Date(startDate).setHours(0, 0, 0, 0) : null;
+      const end = endDate ? new Date(endDate).setHours(23, 59, 59, 999) : null;
+
+      if (start && rechargeDate < start) return false;
+      if (end && rechargeDate > end) return false;
+    }
+
+    return true;
   });
 
   // Apply sorting filters
   const sortedAndFilteredRecharges = filteredRecharges.filter((recharge) => {
     // Filter by sort mode (apay/sunpay)
-    if (activeSortMode && recharge.mode.toLowerCase() !== activeSortMode.toLowerCase()) {
+    if (
+      activeSortMode &&
+      recharge.mode.toLowerCase() !== activeSortMode.toLowerCase()
+    ) {
       return false;
     }
     // Filter by sort type (INR/USDT)
@@ -256,12 +286,17 @@ function Recharge() {
   // Pagination for frontend filtering
   const startIndex = (currentPage - 1) * recordsPerPage;
   const endIndex = startIndex + recordsPerPage;
-  const paginatedRecharges = sortedAndFilteredRecharges.slice(startIndex, endIndex);
+  const paginatedRecharges = sortedAndFilteredRecharges.slice(
+    startIndex,
+    endIndex
+  );
 
   // Update total items and pages based on filtered results
   useEffect(() => {
     setTotalItems(sortedAndFilteredRecharges.length);
-    setTotalPages(Math.ceil(sortedAndFilteredRecharges.length / recordsPerPage));
+    setTotalPages(
+      Math.ceil(sortedAndFilteredRecharges.length / recordsPerPage)
+    );
   }, [sortedAndFilteredRecharges.length]);
 
   const handlePageChange = (page: number) => {
@@ -377,7 +412,7 @@ function Recharge() {
     <div className="min-h-screen bg-[#1A1A2E] py-8">
       <div className="w-full px-2">
         {/* Header with Title and Buttons */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+        <div className="flex flex-col justify-between items-start gap-6 mb-8 ml-10">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg">
               <Wallet className="w-7 h-7 text-purple-400" />
@@ -505,6 +540,28 @@ function Recharge() {
                 </div>
               )}
             </div>
+
+            <div className="flex items-center gap-3">
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-36 py-2 px-3 border border-purple-500/20 rounded-lg text-white focus:outline-none focus:border-purple-500 bg-purple-600"
+              />
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-36 py-2 px-3 border border-purple-500/20 rounded-lg text-white focus:outline-none focus:border-purple-500 bg-purple-600"
+              />
+            </div>
+
+            <button
+              onClick={() => exportRechargesToExcel(recharges)}
+              className={`px-4 py-2 rounded-lg transition-all bg-purple-600 text-white`}
+            >
+              <Download />
+            </button>
 
             <button
               onClick={() => setShowHistoryModal(true)}
