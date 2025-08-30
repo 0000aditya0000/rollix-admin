@@ -8,6 +8,7 @@ import {
   ChevronRight,
   X,
   Send,
+  Image,
 } from "lucide-react";
 import {
   getQueries,
@@ -86,6 +87,8 @@ function QueryManagement() {
   const [comment, setComment] = useState("");
   const [commentLoading, setCommentLoading] = useState(false);
   const [commentError, setCommentError] = useState(null);
+  const [commentImage, setCommentImage] = useState(null);
+  const [commentPreview, setCommentPreview] = useState(null);
 
   // Fetch queries
   const fetchQueries = async (page = 1) => {
@@ -156,6 +159,65 @@ function QueryManagement() {
     fetchQueries(newPage);
   };
 
+  // upload to cloudinary
+  const uploadToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "kyc-presets");
+
+    try {
+      const res = await fetch(
+        "https://api.cloudinary.com/v1_1/dwytm0sdm/image/upload",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await res.json();
+      if (data.secure_url) {
+        return data.secure_url;
+      } else {
+        console.error("Cloudinary upload failed:", data);
+        return null;
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      return null;
+    }
+  };
+
+  // Handle image selection for comment
+  const handleCommentImageChange = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate size
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("File size should be less than 5MB");
+      return;
+    }
+
+    // Validate type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload only image files");
+      return;
+    }
+
+    // ✅ Local preview
+    const reader = new FileReader();
+    reader.onloadend = () => setCommentPreview(reader.result); // base64 string
+    reader.readAsDataURL(file);
+
+    // ✅ Upload to Cloudinary
+    const uploadedUrl = await uploadToCloudinary(file);
+    if (uploadedUrl) {
+      setCommentImage(uploadedUrl); // save Cloudinary URL
+    } else {
+      toast.error("Image upload failed");
+    }
+  };
+
   const handleAddComment = async () => {
     if (!comment.trim() || !selectedQuery) return;
 
@@ -165,6 +227,7 @@ function QueryManagement() {
 
       await queryComment(selectedQuery.id, {
         comment: comment.trim(),
+        image: commentImage || "",
         is_admin: true,
       });
 
@@ -178,6 +241,8 @@ function QueryManagement() {
       }
 
       setComment("");
+      setCommentImage(null);
+      setCommentPreview(null);
     } catch (err) {
       setCommentError(err.message || "Failed to add comment");
       console.error("Error adding comment:", err);
@@ -495,6 +560,14 @@ function QueryManagement() {
                       {selectedQuery.status.replace("_", " ")}
                     </span>
                   </div>
+                  <div className="flex flex-col sm:flex-row">
+                    <span className="w-full sm:w-32 text-sm font-medium text-gray-400 mb-1 sm:mb-0">
+                      User ID:
+                    </span>
+                    <span className="text-sm text-white capitalize flex-1">
+                      {selectedQuery.user_id}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="flex flex-col">
@@ -601,30 +674,74 @@ function QueryManagement() {
               <h3 className="text-lg font-medium text-white mb-4">
                 Add Comment
               </h3>
+
               {commentError && (
                 <div className="mb-4 p-3 bg-red-500/20 text-red-400 rounded-lg text-sm">
                   {commentError}
                 </div>
               )}
+
               <div className="flex gap-2">
+                {/* Textarea */}
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="Type your comment here..."
                   className="flex-1 min-h-[80px] max-h-32 p-3 bg-[#1A1A2E] border border-purple-500/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 resize-none"
                 />
-                <button
-                  onClick={handleAddComment}
-                  disabled={!comment.trim() || commentLoading}
-                  className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed self-end"
-                >
-                  {commentLoading ? (
-                    <Loader2 className="animate-spin" size={20} />
-                  ) : (
-                    <Send size={20} />
-                  )}
-                </button>
+
+                {/* Upload Button + Hidden Input */}
+                <div className="flex flex-col justify-end">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="comment-image"
+                    className="hidden"
+                    onChange={handleCommentImageChange}
+                  />
+                  <label
+                    htmlFor="comment-image"
+                    className="cursor-pointer px-3 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors flex items-center justify-center mb-2"
+                  >
+                    <Image size={20} />
+                  </label>
+
+                  {/* Send button */}
+                  <button
+                    onClick={handleAddComment}
+                    disabled={
+                      (!comment.trim() && !commentImage) || commentLoading
+                    }
+                    className="px-4 py-2 bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    {commentLoading ? (
+                      <Loader2 className="animate-spin" size={20} />
+                    ) : (
+                      <Send size={20} />
+                    )}
+                  </button>
+                </div>
               </div>
+
+              {/* Preview Selected Image */}
+              {commentPreview && (
+                <div className="mt-3 relative">
+                  <img
+                    src={commentPreview}
+                    alt="Preview"
+                    className="max-h-32 rounded-lg border border-purple-500/20"
+                  />
+                  <button
+                    onClick={() => {
+                      setCommentImage(null);
+                      setCommentPreview(null);
+                    }}
+                    className="absolute top-2 right-2 bg-red-500/70 text-white rounded-full p-1 text-xs hover:bg-red-600 transition"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

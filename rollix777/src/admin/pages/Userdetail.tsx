@@ -26,7 +26,7 @@ import {
   getAllTransactions,
   getBetHistoryByGameType,
 } from "../../lib/services/userService";
-import { updateWalletBalance } from "../../lib/services/userService";
+import { updateBonusBalance } from "../../lib/services/userService";
 import { useParams, useNavigate } from "react-router-dom";
 
 interface WalletBalance {
@@ -97,7 +97,7 @@ const Userdetail = () => {
   const [banUser, setBanUser] = useState<boolean>(false);
   const [banWithdrawalVal, setBanWithdrawalVal] = useState(false);
   const [editBalance, setEditBalance] = useState("");
-  const [editingWallet, setEditingWallet] = useState<string | null>(null);
+  const [editingBonus, setEditingBonus] = useState<string | null>(null);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [activeBetTab, setActiveBetTab] = useState("Wingo");
   const [betHistories, setBetHistories] = useState<any[]>([]);
@@ -173,14 +173,14 @@ const Userdetail = () => {
     }
   }, [activeBetTab, expandedSections.betHistory, userId, activeTimer]);
 
-  const handleAddWallet = async () => {
-    if (!editingWallet) return;
+  const handleAddBonus = async () => {
+    if (!editingBonus) return;
 
     try {
-      const response = await updateWalletBalance(
+      const response = await updateBonusBalance(
         userId,
         Number(editBalance),
-        editingWallet
+        editingBonus
       );
       console.log("Wallet updated:", response);
 
@@ -197,7 +197,7 @@ const Userdetail = () => {
           deposits: refreshed.data.deposits,
         });
       }
-      setEditingWallet(null);
+      setEditingBonus(null);
       setEditBalance("");
     } catch (err) {
       console.error("Failed to update wallet:", err);
@@ -398,48 +398,42 @@ const Userdetail = () => {
                 </h2>
               </div>
 
-              {/* Wallet Grid - 2 columns by default, 3 on larger screens */}
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-1 gap-3 md:gap-4">
+              {/* Wallet Grid */}
+              <div className="grid grid-cols-1 gap-4">
                 {userData?.wallet
                   .filter((wallet) => wallet.cryptoname === "INR")
                   .map((wallet) => (
                     <div
                       key={wallet.id}
-                      className="relative p-3 md:p-4 bg-[#1A1A2E] rounded-xl border border-purple-500/10"
+                      className="relative p-4 bg-[#1A1A2E] rounded-xl border border-purple-500/10"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="w-8 h-8 md:w-10 md:h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                          <span className="text-purple-400 font-medium text-sm md:text-base">
+                      {/* Wallet Info */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                          <span className="text-purple-400 font-medium text-base">
                             {wallet.cryptoname}
                           </span>
                         </div>
-                        {/* Edit button at top-right */}
-                        <button
-                          className="absolute top-3 right-3 px-3 py-1 text-xs md:text-sm 
-                              text-purple-400 border border-purple-400 rounded-md 
-                              hover:bg-purple-500/10 hover:text-purple-300 transition"
-                          onClick={() => {
-                            if (editingWallet === wallet.cryptoname) {
-                              setEditingWallet(null);
-                              setEditBalance("");
-                            } else {
-                              setEditingWallet(wallet.cryptoname);
-                              setEditBalance(wallet.balance);
-                            }
-                          }}
-                        >
-                          {editingWallet === wallet.cryptoname
-                            ? "Cancel"
-                            : "Edit"}
-                        </button>
-
-                        <span className="text-gray-400 text-xs md:text-sm mt-8">
+                        <span className="text-gray-400 text-xs md:text-sm">
                           #{wallet.id}
                         </span>
                       </div>
-                      <div className="mt-2">
-                        {editingWallet === wallet.cryptoname ? (
-                          <div className="flex gap-2">
+
+                      {/* Available Balance (readonly) */}
+                      <div className="mb-3">
+                        <p className="text-gray-400 text-sm">
+                          Available Balance
+                        </p>
+                        <span className="text-white font-semibold text-lg">
+                          {wallet.balance || "0"}
+                        </span>
+                      </div>
+
+                      {/* Bonus Balance (editable by admin) */}
+                      <div>
+                        <p className="text-gray-400 text-sm">Bonus Balance</p>
+                        {editingBonus === wallet.cryptoname ? (
+                          <div className="flex gap-2 mt-1">
                             <input
                               type="number"
                               value={editBalance}
@@ -447,16 +441,36 @@ const Userdetail = () => {
                               className="px-2 py-1 text-sm rounded bg-gray-800 text-white border border-purple-500/30 focus:outline-none"
                             />
                             <button
-                              onClick={handleAddWallet}
+                              onClick={handleAddBonus}
                               className="px-3 py-1 bg-purple-600 text-white rounded-md hover:bg-purple-500 transition"
                             >
                               Save
                             </button>
+                            <button
+                              onClick={() => {
+                                setEditingBonus(null);
+                                setEditBalance("");
+                              }}
+                              className="px-3 py-1 border border-purple-400 text-purple-400 rounded-md hover:bg-purple-500/10 transition"
+                            >
+                              Cancel
+                            </button>
                           </div>
                         ) : (
-                          <span className="text-white font-medium text-base md:text-lg">
-                            {wallet.balance || "0"}
-                          </span>
+                          <div className="flex items-center justify-between">
+                            <span className="text-white font-medium text-base">
+                              {wallet.bonus_balance || "0"}
+                            </span>
+                            <button
+                              className="px-3 py-1 text-sm text-purple-400 border border-purple-400 rounded-md hover:bg-purple-500/10 hover:text-purple-300 transition"
+                              onClick={() => {
+                                setEditingBonus(wallet.cryptoname);
+                                setEditBalance(wallet.bonus_balance);
+                              }}
+                            >
+                              Edit
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
