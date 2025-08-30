@@ -79,6 +79,7 @@ function Recharge() {
     { value: "apay", label: "Sort by APAY" },
     { value: "sunpay", label: "Sort by Sunpay" },
     { value: "watchpay", label: "Sort by Watchpay" },
+    { value: "tatapay", label: "Sort by Tata Pay" },
   ];
 
   const sortByTypeOptions = [
