@@ -170,6 +170,30 @@ export const updateWalletBalance = async (userId, balance, cryptoname) => {
   }
 };
 
+export const updateBonusBalance = async (userId, bonus) => {
+  try {
+    const response = await fetch(`${baseUrl}/api/admin/edit-bonus`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({ userId, bonus }),
+    });
+
+    if (!response.ok) {
+      const errordata = await response.json().catch(() => ({}));
+      throw new Error(
+        errordata.message || `HTTP error! status: ${response.status}`
+      );
+    }
+    return await response.json();
+  } catch (error) {
+    console.log("Error Updating Wallet balance", error.message);
+    throw error;
+  }
+};
+
 export const getAllTransactions = async (userId) => {
   try {
     const response = await fetch(`${baseUrl}/api/user/transactions/${userId}`, {
