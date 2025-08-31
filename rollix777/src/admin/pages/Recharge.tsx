@@ -234,16 +234,9 @@ function Recharge() {
     }
   };
 
-  // Add a debug log to check the recharges state
-  useEffect(() => {
-    console.log("Current recharges:", recharges);
-  }, [recharges]);
 
-  // Debug log for date filtering
-  useEffect(() => {
-    console.log("Date filtering applied:", { appliedStartDate, appliedEndDate });
-    console.log("Filtered results count:", filteredRecharges.length);
-  }, [appliedStartDate, appliedEndDate, filteredRecharges.length]);
+
+
 
   // Note: API calls for filtering have been commented out and replaced with frontend-only filtering
   // The search functionality still uses API calls as it wasn't part of the modification request
@@ -281,28 +274,18 @@ function Recharge() {
       const start = appliedStartDate ? new Date(appliedStartDate) : null;
       const end = appliedEndDate ? new Date(appliedEndDate) : null;
 
-      // Debug logging
-      console.log('Date filtering:', {
-        originalDate: recharge.date,
-        rechargeDate: rechargeDate.toISOString(),
-        startDate: start?.toISOString(),
-        endDate: end?.toISOString(),
-        appliedStartDate,
-        appliedEndDate
-      });
-
       if (start && rechargeDate < start) {
-        console.log('Filtered out - before start date:', recharge.date);
         return false;
       }
       if (end && rechargeDate > end) {
-        console.log('Filtered out - after end date:', recharge.date);
         return false;
       }
     }
 
     return true;
   });
+
+
 
   // Apply sorting filters
   const sortedAndFilteredRecharges = filteredRecharges.filter((recharge) => {
@@ -342,11 +325,9 @@ function Recharge() {
   };
 
   const handleFetchByDate = () => {
-    console.log('Fetch button clicked:', { startDate, endDate });
     setAppliedStartDate(startDate);
     setAppliedEndDate(endDate);
     setCurrentPage(1); // Reset to first page when applying new filters
-    console.log('Applied dates set:', { appliedStartDate: startDate, appliedEndDate: endDate });
   };
 
   const handleClearDateFilter = () => {
@@ -357,7 +338,7 @@ function Recharge() {
     setCurrentPage(1); // Reset to first page when clearing filters
   };
 
-  console.log(paginatedRecharges, "recharge");
+
 
   const renderPagination = () => {
     if (totalPages <= 1) return null;
@@ -626,21 +607,7 @@ function Recharge() {
                   Clear
                 </button>
               )}
-              <button
-                onClick={() => {
-                  console.log('Debug - Current state:', {
-                    startDate,
-                    endDate,
-                    appliedStartDate,
-                    appliedEndDate,
-                    totalRecharges: recharges.length,
-                    filteredCount: filteredRecharges.length
-                  });
-                }}
-                className="px-3 py-2 rounded-lg transition-all bg-blue-600 text-white hover:bg-blue-700 text-xs"
-              >
-                Debug
-              </button>
+
             {(appliedStartDate || appliedEndDate) && (
               <div className="text-xs text-green-400 bg-green-500/10 px-3 py-1 rounded-lg">
                 Filtered: {appliedStartDate && new Date(appliedStartDate).toLocaleDateString()}

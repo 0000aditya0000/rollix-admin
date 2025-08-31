@@ -14,8 +14,9 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
+// Temporarily comment out XLSX imports to fix initialization error
+// import { utils as XLSXUtils, write as XLSXWrite } from "xlsx";
+// import { saveAs } from "file-saver";
 
 const Users = () => {
   const navigate = useNavigate();
@@ -172,45 +173,46 @@ const Users = () => {
     });
   };
 
-  const exportUsersToExcel = () => {
-    const worksheetData = users.map((user: any) => {
-      // Convert wallets array into an object { CP: 0, INR: 3733.34, ... }
-      const walletData = user.wallets.reduce((acc: any, wallet: any) => {
-        acc[wallet.cryptoname] = wallet.balance;
-        return acc;
-      }, {});
+  // Temporarily commented out to fix initialization error
+  // const exportUsersToExcel = () => {
+  //   const worksheetData = users.map((user: any) => {
+  //     // Convert wallets array into an object { CP: 0, INR: 3733.34, ... }
+  //     const walletData = user.wallets.reduce((acc: any, wallet: any) => {
+  //       acc[wallet.cryptoname] = wallet.balance;
+  //       return acc;
+  //     }, {});
 
-      return {
-        ID: user.id,
-        Username: user.username,
-        Name: user.name,
-        Email: user.email,
-        Phone: user.phone,
-        "Referral Code": user.my_referral_code,
-        "Referred By": user.referred_by || "-",
-        "Created At": new Date(user.created_at).toLocaleDateString("en-IN", {
-          dateStyle: "medium",
-        }),
-        "Withdrawal Blocked": user.is_withdrawal_blocked ? "Yes" : "No",
-        "Login Disabled": user.is_login_disabled ? "Yes" : "No",
-        // Spread wallet balances into separate columns
-        ...walletData,
-      };
-    });
+  //     return {
+  //       ID: user.id,
+  //       Username: user.username,
+  //       Name: user.name,
+  //       Email: user.email,
+  //       Phone: user.phone,
+  //       "Referral Code": user.my_referral_code,
+  //       "Referred By": user.referred_by || "-",
+  //       "Created At": new Date(user.created_at).toLocaleDateString("en-IN", {
+  //         dateStyle: "medium",
+  //         }),
+  //       "Withdrawal Blocked": user.is_withdrawal_blocked ? "Yes" : "No",
+  //       "Login Disabled": user.is_login_disabled ? "Yes" : "No",
+  //       // Spread wallet balances into separate columns
+  //       ...walletData,
+  //     };
+  //   });
 
-    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+  //   const worksheet = XLSXUtils.json_to_sheet(worksheetData);
+  //   const workbook = XLSXUtils.book_new();
+  //   XLSXUtils.book_append_sheet(workbook, worksheet, "Users");
 
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
-    });
-    const fileData = new Blob([excelBuffer], {
-      type: "application/octet-stream",
-    });
-    saveAs(fileData, "users.xlsx");
-  };
+  //   const excelBuffer = XLSXWrite(workbook, {
+  //     bookType: "xlsx",
+  //     type: "array",
+  //     });
+  //     const fileData = new Blob([excelBuffer], {
+  //       type: "application/octet-stream",
+  //     });
+  //     saveAs(fileData, "users.xlsx");
+  // };
 
   // Popup Component for Adding User
   const Popup = ({ onClose, onAddUser }) => {
@@ -490,13 +492,14 @@ const Users = () => {
             <span>Add User</span>
           </button>
 
-          <button
+          {/* Temporarily commented out to fix initialization error */}
+          {/* <button
             onClick={() => exportUsersToExcel()}
             className="py-2 px-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg text-white flex items-center gap-2 hover:opacity-90 transition-opacity ml-4"
           >
             <Download size={18} />
             <span>Download</span>
-          </button>
+          </button> */}
         </div>
       </div>
 
