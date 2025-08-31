@@ -188,6 +188,10 @@ const Reports = () => {
   const [trxGameData, setTrxGameData] = useState<TrxGameData | null>(null);
   const [trxTimer, setTrxxTimer] = useState(1);
   const [activeTab, setActiveTab] = useState("wingo");
+  
+  // Pagination state for transactions
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage] = useState(20);
 
   const durationsVal = [1, 3, 5, 10];
   const timerVal = [1, 3, 5, 10];
@@ -277,10 +281,30 @@ const Reports = () => {
     try {
       const data = await getTransactionsReport(startDate, endDate);
       setTransactionReport(data);
+      setCurrentPage(1); // Reset to first page when new data is fetched
     } catch (error) {
       console.error("Error fetching transaction report:", error);
       setError("Error fetching transaction report");
     }
+  };
+
+  // Pagination functions for transactions
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Calculate pagination for transactions
+  const getPaginatedTransactions = () => {
+    if (!transactionReport?.transactions) return [];
+    
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    const endIndex = startIndex + recordsPerPage;
+    return transactionReport.transactions.slice(startIndex, endIndex);
+  };
+
+  const getTotalPages = () => {
+    if (!transactionReport?.transactions) return 0;
+    return Math.ceil(transactionReport.transactions.length / recordsPerPage);
   };
 
   useEffect(() => {
@@ -1335,6 +1359,7 @@ const Reports = () => {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="text-left text-gray-400">
+                    <th className="pb-3">User ID</th>
                     <th className="pb-3">Type</th>
                     <th className="pb-3">Amount</th>
                     <th className="pb-3">Crypto</th>
@@ -1346,12 +1371,13 @@ const Reports = () => {
                 </thead>
                 <tbody>
                   {transactionReport &&
-                  transactionReport?.transactions?.length > 0 ? (
-                    transactionReport?.transactions.map((txn, index) => (
+                  getPaginatedTransactions().length > 0 ? (
+                    getPaginatedTransactions().map((txn, index) => (
                       <tr
                         key={index}
                         className="border-t border-purple-500/10 text-white"
                       >
+                        <td className="py-3 capitalize">{txn.userId}</td>
                         <td className="py-3 capitalize">{txn.type}</td>
                         <td className="py-3">₹{txn.amount}</td>
                         <td className="py-3 uppercase">{txn.cryptoname}</td>
@@ -1366,7 +1392,7 @@ const Reports = () => {
                   ) : (
                     <tr>
                       <td
-                        colSpan={7}
+                        colSpan={8}
                         className="py-4 text-center text-gray-400"
                       >
                         No transactions found
@@ -1376,6 +1402,47 @@ const Reports = () => {
                 </tbody>
               </table>
             </div>
+            
+            {/* Pagination Controls */}
+            {transactionReport && transactionReport.transactions && transactionReport.transactions.length > 0 && (
+              <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-sm text-gray-400">
+                  Showing {((currentPage - 1) * recordsPerPage) + 1} to {Math.min(currentPage * recordsPerPage, transactionReport.transactions.length)} of {transactionReport.transactions.length} transactions
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-2 rounded-lg bg-[#252547] text-gray-400 hover:bg-[#2f2f5a] hover:text-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  >
+                    Previous
+                  </button>
+                  
+                  {Array.from({ length: getTotalPages() }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`px-3 py-2 rounded-lg transition-all duration-200 ${
+                        currentPage === page
+                          ? "bg-purple-600 text-white font-medium shadow-lg shadow-purple-500/25"
+                          : "bg-[#252547] text-gray-400 hover:bg-[#2f2f5a] hover:text-purple-400"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === getTotalPages()}
+                    className="px-3 py-2 rounded-lg bg-[#252547] text-gray-400 hover:bg-[#2f2f5a] hover:text-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

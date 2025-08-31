@@ -27,6 +27,12 @@ const Users = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filteredData, setFilteredData] = useState([]);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [recordsPerPage] = useState(30);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Get All Users
   useEffect(() => {
@@ -36,7 +42,6 @@ const Users = () => {
           "https://api.rollix777.com/api/user/allusers"
         );
         setUsers(response.data);
-        console.log(response.data);
       } catch (error) {
         setError(error);
       } finally {
@@ -121,9 +126,44 @@ const Users = () => {
     );
   }
 
+  // Pagination functions
+  const getTotalPages = () => {
+    const dataToPaginate = isSearching ? searchResults : users;
+    return Math.ceil(dataToPaginate.length / recordsPerPage);
+  };
+
+  const getPaginatedUsers = () => {
+    const dataToPaginate = isSearching ? searchResults : users;
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    const endIndex = startIndex + recordsPerPage;
+    return dataToPaginate.slice(startIndex, endIndex);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Search function that only searches by exact user ID match
+  const handleSearch = () => {
+    if (!searchTerm.trim()) {
+      setIsSearching(false);
+      setSearchResults([]);
+      setCurrentPage(1);
+      return;
+    }
+
+    // Search through all users by exact ID match only
+    const results = users.filter((user) => 
+      user.id.toString() === searchTerm
+    );
+
+    setSearchResults(results);
+    setIsSearching(true);
+    setCurrentPage(1); // Reset to first page when searching
+  };
+
   const handleFilter = () => {
-    const data = users.filter((user) => user.id.toString() === searchTerm);
-    setFilteredData(data);
+    handleSearch();
   };
 
   const formatDate = (dateStr: string) => {
@@ -475,9 +515,10 @@ const Users = () => {
         <div className="relative flex-1">
           <input
             type="text"
-            placeholder="Search users..."
+            placeholder="Enter exact user ID (e.g., 1012)"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
             className="w-full py-2 pl-10 pr-4 bg-[#252547] border border-purple-500/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
           />
           <Search
@@ -486,12 +527,25 @@ const Users = () => {
           />
         </div>
         <button
-          onClick={handleFilter}
+          onClick={handleSearch}
           className="py-2 px-4 bg-[#252547] border border-purple-500/20 rounded-lg text-white flex items-center justify-center gap-2 hover:bg-[#2f2f5a] transition-colors"
         >
           <Search size={18} />
           <span>Search</span>
         </button>
+        {isSearching && (
+          <button
+            onClick={() => {
+              setSearchTerm("");
+              setIsSearching(false);
+              setSearchResults([]);
+              setCurrentPage(1);
+            }}
+            className="py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            Clear Search
+          </button>
+        )}
       </div>
 
       <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-xl border border-purple-500/20 overflow-hidden">
@@ -509,7 +563,7 @@ const Users = () => {
               </tr>
             </thead>
             <tbody>
-              {(filteredData.length > 0 ? filteredData : users).map((user) => (
+              {getPaginatedUsers().map((user) => (
                 <tr
                   key={user.id}
                   className="border-b border-purple-500/10 text-white hover:bg-purple-500/5"
@@ -534,9 +588,12 @@ const Users = () => {
                     </span>
                   </td>
                   <td className="py-4 px-6">
-                    {user.wallets?.find(
-                      (wallet: any) => wallet.cryptoname === "INR"
-                    )?.balance || "0"}
+                    {(() => {
+                      const balance = user.wallets?.find(
+                        (wallet: any) => wallet.cryptoname === "INR"
+                      )?.balance;
+                      return balance ? Number(balance).toFixed(2) : "0.00";
+                    })()}
                   </td>
                   <td className="py-4 px-6">{formatDate(user.created_at)}</td>
                   <td className="py-4 px-6">
@@ -569,6 +626,57 @@ const Users = () => {
             </tbody>
           </table>
         </div>
+        
+        {/* Pagination Controls */}
+        {users.length > 0 && (
+          <div className="px-6 py-4 border-t border-purple-500/10">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-gray-400">
+                {isSearching ? (
+                  <>
+                    Showing {((currentPage - 1) * recordsPerPage) + 1} to {Math.min(currentPage * recordsPerPage, searchResults.length)} of {searchResults.length} search results
+                    <br />
+                    <span className="text-purple-400">Total users: {users.length}</span>
+                  </>
+                ) : (
+                  `Showing ${((currentPage - 1) * recordsPerPage) + 1} to ${Math.min(currentPage * recordsPerPage, users.length)} of ${users.length} users`
+                )}
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-2 rounded-lg bg-[#252547] text-gray-400 hover:bg-[#2f2f5a] hover:text-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  Previous
+                </button>
+                
+                {Array.from({ length: getTotalPages() }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-3 py-2 rounded-lg transition-all duration-200 ${
+                      currentPage === page
+                        ? "bg-purple-600 text-white font-medium shadow-lg shadow-purple-500/25"
+                        : "bg-[#252547] text-gray-400 hover:bg-[#2f2f5a] hover:text-purple-400"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === getTotalPages()}
+                  className="px-3 py-2 rounded-lg bg-[#252547] text-gray-400 hover:bg-[#2f2f5a] hover:text-purple-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
