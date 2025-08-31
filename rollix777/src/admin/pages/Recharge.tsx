@@ -72,6 +72,8 @@ function Recharge() {
   const [totalItems, setTotalItems] = useState(0);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [appliedStartDate, setAppliedStartDate] = useState("");
+  const [appliedEndDate, setAppliedEndDate] = useState("");
 
   const recordsPerPage = 15;
 
@@ -131,7 +133,7 @@ function Recharge() {
   const fetchRecharges = async () => {
     try {
       // Only fetch all data without filters on initial load
-      const response = await getAllRecharges(1, 1000); // Fetch all data
+      const response = await getAllRecharges(1, 15000); // Fetch all data
 
       console.log("Recharge Response:", response);
 
@@ -255,11 +257,11 @@ function Recharge() {
       return false;
     }
 
-    // ✅ new date filter
-    if (startDate || endDate) {
+    // ✅ new date filter - only apply when fetch button is clicked
+    if (appliedStartDate || appliedEndDate) {
       const rechargeDate = new Date(recharge.date).setHours(0, 0, 0, 0);
-      const start = startDate ? new Date(startDate).setHours(0, 0, 0, 0) : null;
-      const end = endDate ? new Date(endDate).setHours(23, 59, 59, 999) : null;
+      const start = appliedStartDate ? new Date(appliedStartDate).setHours(0, 0, 0, 0) : null;
+      const end = appliedEndDate ? new Date(appliedEndDate).setHours(23, 59, 59, 999) : null;
 
       if (start && rechargeDate < start) return false;
       if (end && rechargeDate > end) return false;
@@ -303,6 +305,20 @@ function Recharge() {
   const handlePageChange = (page: number) => {
     if (page < 1 || page > totalPages) return;
     setCurrentPage(Math.min(page, totalPages));
+  };
+
+  const handleFetchByDate = () => {
+    setAppliedStartDate(startDate);
+    setAppliedEndDate(endDate);
+    setCurrentPage(1); // Reset to first page when applying new filters
+  };
+
+  const handleClearDateFilter = () => {
+    setStartDate("");
+    setEndDate("");
+    setAppliedStartDate("");
+    setAppliedEndDate("");
+    setCurrentPage(1); // Reset to first page when clearing filters
   };
 
   console.log(paginatedRecharges, "recharge");
@@ -555,6 +571,32 @@ function Recharge() {
                 onChange={(e) => setEndDate(e.target.value)}
                 className="w-36 py-2 px-3 border border-purple-500/20 rounded-lg text-white focus:outline-none focus:border-purple-500 bg-purple-600"
               />
+              <button
+                onClick={handleFetchByDate}
+                disabled={!startDate && !endDate}
+                className={`px-4 py-2 rounded-lg transition-all ${
+                  !startDate && !endDate
+                    ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                    : "bg-green-600 text-white hover:bg-green-700"
+                }`}
+              >
+                Fetch
+              </button>
+              {(appliedStartDate || appliedEndDate) && (
+                <button
+                  onClick={handleClearDateFilter}
+                  className="px-4 py-2 rounded-lg transition-all bg-red-600 text-white hover:bg-red-700"
+                >
+                  Clear
+                </button>
+              )}
+            {(appliedStartDate || appliedEndDate) && (
+              <div className="text-xs text-green-400 bg-green-500/10 px-3 py-1 rounded-lg">
+                Filtered: {appliedStartDate && new Date(appliedStartDate).toLocaleDateString()}
+                {appliedStartDate && appliedEndDate && " - "}
+                {appliedEndDate && new Date(appliedEndDate).toLocaleDateString()}
+              </div>
+            )}
             </div>
 
             <button

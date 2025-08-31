@@ -467,7 +467,7 @@ const Dashboard = () => {
                           </td>
                           <td className="py-4">{recharge.userId}</td>
                           <td className="py-4 text-purple-400 font-medium">
-                            {recharge.type === "INR" ? "₹" : "$"}{" "}
+                            {recharge.type === "USDT" ? "$" : "₹"}{" "}
                             {recharge.amount}
                           </td>
                           <td className="py-4">{recharge.type}</td>
