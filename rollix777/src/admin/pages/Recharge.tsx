@@ -665,7 +665,7 @@ function Recharge() {
                       <td className="py-4 text-white font-medium">
                         {recharge.order_id}
                       </td>
-                      <td className="py-4 text-white">{recharge.id}</td>
+                      <td className="py-4 text-white">{recharge.userId}</td>
                       <td className="py-4 text-purple-400 font-medium">
                         {recharge.type === "USDT" ? "$ " : "₹ "}
                         {recharge.amount}
