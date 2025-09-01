@@ -22,7 +22,8 @@ import { exportRechargesToExcel } from "../../lib/utils/exportToExcel";
 interface Recharge {
   recharge_id: number;
   order_id: string;
-  userId: number;
+  userId?: number;
+  id?: number; // Alternative field name for user ID
   amount: string;
   type: string;
   mode: string;
@@ -664,7 +665,7 @@ function Recharge() {
                       <td className="py-4 text-white font-medium">
                         {recharge.order_id}
                       </td>
-                      <td className="py-4 text-white">{recharge.userId}</td>
+                      <td className="py-4 text-white">{recharge.id}</td>
                       <td className="py-4 text-purple-400 font-medium">
                         {recharge.type === "USDT" ? "$ " : "₹ "}
                         {recharge.amount}

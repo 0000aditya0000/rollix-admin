@@ -1,0 +1,86 @@
+[
+            {
+                "id": "7059",
+                "name": "Taberna De Los Muertos",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/slgames/game_img_2/TabernaDeLosMuertos.jpg",
+                "device": "2",
+                "title": "habanero",
+                "categories": "slots",
+                "bm": "0",
+                "demo": "1",
+                "rewriterule": "1",
+                "exitButton": "1"
+            },
+            {
+                "id": "6933",
+                "name": "Happy Ape",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/slgames/game_img_2/HappyApe.jpg",
+                "device": "2",
+                "title": "habanero",
+                "categories": "slots",
+                "bm": "0",
+                "demo": "1",
+                "rewriterule": "1",
+                "exitButton": "1"
+            },
+            {
+                "id": "6932",
+                "name": "Panda Panda",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/slgames/game_img_2/PandaPanda.jpg",
+                "device": "2",
+                "title": "habanero",
+                "categories": "slots",
+                "bm": "0",
+                "demo": "1",
+                "rewriterule": "1",
+                "exitButton": "1"
+            },
+            {
+                "id": "6931",
+                "name": "Lucky Fortune Cat",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/slgames/game_img_2/LuckyFortuneCat.jpg",
+                "device": "2",
+                "title": "habanero",
+                "categories": "slots",
+                "bm": "0",
+                "demo": "1",
+                "rewriterule": "1",
+                "exitButton": "1"
+            },
+            {
+                "id": "6893",
+                "name": "Hot Hot Halloween",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/slgames/game_img_2/HotHotHalloween.jpg",
+                "device": "2",
+                "title": "habanero",
+                "categories": "slots",
+                "bm": "0",
+                "demo": "1",
+                "rewriterule": "1",
+                "exitButton": "1"
+            },
+            {
+                "id": "6811",
+                "name": "Nuwa",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/slgames/game_img_2/Nuwa.jpg",
+                "device": "2",
+                "title": "habanero",
+                "categories": "slots",
+                "bm": "0",
+                "demo": "1",
+                "rewriterule": "1",
+                "exitButton": "1"
+            },
+            {
+                "id": "6789",
+                "name": "Hot Hot Fruit",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/slgames/game_img_2/HotHotFruit.jpg",
+                "device": "2",
+                "title": "habanero",
+                "categories": "slots",
+                "bm": "0",
+                "demo": "1",
+                "rewriterule": "1",
+                "exitButton": "1"
+            }
+        ]

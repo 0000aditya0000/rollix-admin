@@ -18,6 +18,7 @@ import {
   Building,
   ArrowDownCircle,
   ArrowUpCircle,
+  Gamepad2,
 } from "lucide-react";
 import {
   fetchUserAllData,
@@ -28,6 +29,7 @@ import {
 } from "../../lib/services/userService";
 import { updateBonusBalance } from "../../lib/services/userService";
 import { useParams, useNavigate } from "react-router-dom";
+import { getGameNameById, gameExists } from "../../lib/utils/gameLookup";
 
 interface WalletBalance {
   id: number;
@@ -1263,7 +1265,7 @@ const Userdetail = () => {
                           <thead>
                             <tr className="text-left border-b border-purple-500/20">
                               <th className="py-2">Transaction ID</th>
-                              <th className="py-2">Game ID</th>
+                              <th className="py-2">Game Name</th>
                               <th className="py-2">Session ID</th>
                               <th className="py-2">Bet Amount</th>
                               <th className="py-2">Winning Amount</th>
@@ -1280,7 +1282,26 @@ const Userdetail = () => {
                                 <td className="py-2">
                                   {txn.transaction_id || "-"}
                                 </td>
-                                <td className="py-2">{txn.gameId || "-"}</td>
+                                <td className="py-2">
+                                  <div className="flex flex-col">
+                                    <div className="flex items-center gap-2">
+                                      <Gamepad2 className={`w-4 h-4 ${gameExists(txn.gameId) ? 'text-purple-400' : 'text-gray-500'}`} />
+                                      <span 
+                                        className={`font-medium truncate max-w-[200px] ${
+                                          gameExists(txn.gameId) 
+                                            ? 'text-purple-400' 
+                                            : 'text-gray-500'
+                                        }`}
+                                        title={getGameNameById(txn.gameId)}
+                                      >
+                                        {getGameNameById(txn.gameId)}
+                                      </span>
+                                    </div>
+                                    <span className="text-xs text-gray-500 ml-6">
+                                      ID: {txn.gameId || "-"}
+                                    </span>
+                                  </div>
+                                </td>
                                 <td className="py-2">{txn.sessionId || "-"}</td>
                                 <td className="py-2">
                                   {txn.bet_amount || "-"}
@@ -1299,7 +1320,7 @@ const Userdetail = () => {
                           </tbody>
                         </table>
                       ) : (
-                        <p className="text-gray-400 text-center py-4">
+                        <p className="py-4 text-center text-gray-400">
                           No bet history found
                         </p>
                       ))}

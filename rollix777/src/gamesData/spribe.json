@@ -1,0 +1,110 @@
+ [
+            {
+                "id": "12976",
+                "name": "Keno",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/srent/game_img_2/15006.jpg",
+                "device": "2",
+                "title": "spribe",
+                "categories": "lottery",
+                "bm": "0",
+                "demo": "0",
+                "rewriterule": "0",
+                "exitButton": "1"
+            },
+            {
+                "id": "12591",
+                "name": "Mines",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/srent/game_img_2/15004.jpg",
+                "device": "2",
+                "title": "spribe",
+                "categories": "lottery",
+                "bm": "0",
+                "demo": "0",
+                "rewriterule": "0",
+                "exitButton": "1"
+            },
+            {
+                "id": "12566",
+                "name": "Goal",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/srent/game_img_2/15002.jpg",
+                "device": "2",
+                "title": "spribe",
+                "categories": "lottery",
+                "bm": "0",
+                "demo": "0",
+                "rewriterule": "0",
+                "exitButton": "1"
+            },
+            {
+                "id": "12565",
+                "name": "HiLo",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/srent/game_img_2/15005.jpg",
+                "device": "2",
+                "title": "spribe",
+                "categories": "lottery",
+                "bm": "0",
+                "demo": "0",
+                "rewriterule": "0",
+                "exitButton": "1"
+            },
+            {
+                "id": "12564",
+                "name": "Hotline",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/srent/game_img_2/15008.jpg",
+                "device": "2",
+                "title": "spribe",
+                "categories": "lottery",
+                "bm": "0",
+                "demo": "0",
+                "rewriterule": "0",
+                "exitButton": "1"
+            },
+            {
+                "id": "12563",
+                "name": "Mini Roulette",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/srent/game_img_2/15007.jpg",
+                "device": "2",
+                "title": "spribe",
+                "categories": "lottery",
+                "bm": "0",
+                "demo": "0",
+                "rewriterule": "0",
+                "exitButton": "1"
+            },
+            {
+                "id": "12562",
+                "name": "Dice",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/srent/game_img_2/15001.jpg",
+                "device": "2",
+                "title": "spribe",
+                "categories": "lottery",
+                "bm": "0",
+                "demo": "0",
+                "rewriterule": "0",
+                "exitButton": "1"
+            },
+            {
+                "id": "12560",
+                "name": "Plinko",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/srent/game_img_2/15003.jpg",
+                "device": "2",
+                "title": "spribe",
+                "categories": "lottery",
+                "bm": "0",
+                "demo": "0",
+                "rewriterule": "0",
+                "exitButton": "1"
+            },
+            {
+                "id": "12559",
+                "name": "Aviator s",
+                "img": "https://asia.cdns-stat.com/resources/sitepicstbs/srent/game_img_2/SpribeAviator.jpg",
+                "device": "2",
+                "title": "spribe",
+                "categories": "lottery",
+                "bm": "0",
+                "demo": "0",
+                "rewriterule": "0",
+                "exitButton": "1"
+            }
+        ]

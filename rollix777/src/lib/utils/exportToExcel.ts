@@ -26,7 +26,8 @@ export interface TransactionReport {
 export interface Recharge {
   recharge_id: number;
   order_id: string;
-  userId: number;
+  userId?: number;
+  id?: number; // Alternative field name for user ID
   amount: string;
   type: string;
   mode: string;
@@ -96,7 +97,7 @@ export const exportRechargesToExcel = (recharges: Recharge[]) => {
   const worksheetData = recharges.map((rec) => ({
     "Recharge ID": rec.recharge_id,
     "Order ID": rec.order_id,
-    "User ID": rec.userId,
+    "User ID": rec.id, // Handle both userId and id fields
     Amount: rec.amount,
     Type: rec.type,
     Mode: rec.mode,

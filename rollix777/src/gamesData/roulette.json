@@ -1,0 +1,14 @@
+[
+    {
+        "id": "4368",
+        "name": "Casino Roulette",
+        "img": "https://asia.cdns-stat.com/resources/sitepicstbs/slgames/game_img_2/CasinoRoulette.jpg",
+        "device": "2",
+        "title": "roulette",
+        "categories": "roulette",
+        "bm": "0",
+        "demo": "1",
+        "rewriterule": "1",
+        "exitButton": "1"
+    }
+]

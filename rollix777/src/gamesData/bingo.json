@@ -1,0 +1,26 @@
+[
+    {
+        "id": "4366",
+        "name": "Extra Bingo",
+        "img": "https://asia.cdns-stat.com/resources/sitepicstbs/slgames/game_img_2/ExtraBingo.jpg",
+        "device": "2",
+        "title": "bingo",
+        "categories": "slots",
+        "bm": "0",
+        "demo": "1",
+        "rewriterule": "0",
+        "exitButton": "1"
+    },
+    {
+        "id": "1654",
+        "name": "Bingo",
+        "img": "https://asia.cdns-stat.com/resources/sitepicstbs/slgames/game_img_2/783_Bingo.jpg",
+        "device": "2",
+        "title": "bingo",
+        "categories": "slots",
+        "bm": "0",
+        "demo": "1",
+        "rewriterule": "1",
+        "exitButton": "1"
+    }
+]
