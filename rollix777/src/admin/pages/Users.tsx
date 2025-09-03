@@ -18,6 +18,9 @@ import { useNavigate } from "react-router-dom";
 // import { utils as XLSXUtils, write as XLSXWrite } from "xlsx";
 // import { saveAs } from "file-saver";
 
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+
 const Users = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,7 +31,7 @@ const Users = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filteredData, setFilteredData] = useState([]);
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [recordsPerPage] = useState(30);
@@ -154,9 +157,7 @@ const Users = () => {
     }
 
     // Search through all users by exact ID match only
-    const results = users.filter((user) => 
-      user.id.toString() === searchTerm
-    );
+    const results = users.filter((user) => user.id.toString() === searchTerm);
 
     setSearchResults(results);
     setIsSearching(true);
@@ -174,45 +175,45 @@ const Users = () => {
   };
 
   // Temporarily commented out to fix initialization error
-  // const exportUsersToExcel = () => {
-  //   const worksheetData = users.map((user: any) => {
-  //     // Convert wallets array into an object { CP: 0, INR: 3733.34, ... }
-  //     const walletData = user.wallets.reduce((acc: any, wallet: any) => {
-  //       acc[wallet.cryptoname] = wallet.balance;
-  //       return acc;
-  //     }, {});
+  const exportUsersToExcel = () => {
+    const worksheetData = users.map((user: any) => {
+      const walletData = user.wallets.reduce((acc: any, wallet: any) => {
+        acc[wallet.cryptoname] = wallet.balance;
+        return acc;
+      }, {});
 
-  //     return {
-  //       ID: user.id,
-  //       Username: user.username,
-  //       Name: user.name,
-  //       Email: user.email,
-  //       Phone: user.phone,
-  //       "Referral Code": user.my_referral_code,
-  //       "Referred By": user.referred_by || "-",
-  //       "Created At": new Date(user.created_at).toLocaleDateString("en-IN", {
-  //         dateStyle: "medium",
-  //         }),
-  //       "Withdrawal Blocked": user.is_withdrawal_blocked ? "Yes" : "No",
-  //       "Login Disabled": user.is_login_disabled ? "Yes" : "No",
-  //       // Spread wallet balances into separate columns
-  //       ...walletData,
-  //     };
-  //   });
+      return {
+        ID: user.id,
+        Username: user.username,
+        Name: user.name,
+        Email: user.email,
+        Phone: user.phone,
+        "Referral Code": user.my_referral_code,
+        "Referred By": user.referred_by || "-",
+        "Created At": new Date(user.created_at).toLocaleDateString("en-IN", {
+          dateStyle: "medium",
+        }),
+        "Withdrawal Blocked": user.is_withdrawal_blocked ? "Yes" : "No",
+        "Login Disabled": user.is_login_disabled ? "Yes" : "No",
+        ...walletData,
+      };
+    });
 
-  //   const worksheet = XLSXUtils.json_to_sheet(worksheetData);
-  //   const workbook = XLSXUtils.book_new();
-  //   XLSXUtils.book_append_sheet(workbook, worksheet, "Users");
+    // Generate worksheet & workbook
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
 
-  //   const excelBuffer = XLSXWrite(workbook, {
-  //     bookType: "xlsx",
-  //     type: "array",
-  //     });
-  //     const fileData = new Blob([excelBuffer], {
-  //       type: "application/octet-stream",
-  //     });
-  //     saveAs(fileData, "users.xlsx");
-  // };
+    // Export to Excel
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    const fileData = new Blob([excelBuffer], {
+      type: "application/octet-stream",
+    });
+    saveAs(fileData, "users.xlsx");
+  };
 
   // Popup Component for Adding User
   const Popup = ({ onClose, onAddUser }) => {
@@ -493,13 +494,13 @@ const Users = () => {
           </button>
 
           {/* Temporarily commented out to fix initialization error */}
-          {/* <button
+          <button
             onClick={() => exportUsersToExcel()}
             className="py-2 px-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg text-white flex items-center gap-2 hover:opacity-90 transition-opacity ml-4"
           >
             <Download size={18} />
             <span>Download</span>
-          </button> */}
+          </button>
         </div>
       </div>
 
@@ -521,7 +522,7 @@ const Users = () => {
             placeholder="Enter exact user ID (e.g., 1012)"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
             className="w-full py-2 pl-10 pr-4 bg-[#252547] border border-purple-500/20 rounded-lg text-white focus:outline-none focus:border-purple-500"
           />
           <Search
@@ -629,7 +630,7 @@ const Users = () => {
             </tbody>
           </table>
         </div>
-        
+
         {/* Pagination Controls */}
         {users.length > 0 && (
           <div className="px-6 py-4 border-t border-purple-500/10">
@@ -637,16 +638,30 @@ const Users = () => {
               <div className="text-sm text-gray-400">
                 {isSearching ? (
                   <>
-                    Showing {((currentPage - 1) * recordsPerPage) + 1} to {Math.min(currentPage * recordsPerPage, searchResults.length)} of {searchResults.length} search results
+                    Showing {(currentPage - 1) * recordsPerPage + 1} to{" "}
+                    {Math.min(
+                      currentPage * recordsPerPage,
+                      searchResults.length
+                    )}{" "}
+                    of {searchResults.length} search results
                     <br />
-                    <span className="text-purple-400">Total users: {users.length}</span>
+                    <span className="text-purple-400">
+                      Total users: {users.length}
+                    </span>
                   </>
                 ) : (
-                  `Showing ${((currentPage - 1) * recordsPerPage) + 1} to ${Math.min(currentPage * recordsPerPage, users.length)} of ${users.length} users`
+                  `Showing ${
+                    (currentPage - 1) * recordsPerPage + 1
+                  } to ${Math.min(
+                    currentPage * recordsPerPage,
+                    users.length
+                  )} of ${users.length} users`
                 )}
               </div>
-              
+
+              {/* Pagination */}
               <div className="flex items-center gap-2">
+                {/* Previous Button */}
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
@@ -654,21 +669,82 @@ const Users = () => {
                 >
                   Previous
                 </button>
-                
-                {Array.from({ length: getTotalPages() }, (_, i) => i + 1).map((page) => (
-                  <button
-                    key={page}
-                    onClick={() => handlePageChange(page)}
-                    className={`px-3 py-2 rounded-lg transition-all duration-200 ${
-                      currentPage === page
-                        ? "bg-purple-600 text-white font-medium shadow-lg shadow-purple-500/25"
-                        : "bg-[#252547] text-gray-400 hover:bg-[#2f2f5a] hover:text-purple-400"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ))}
-                
+
+                {/* Dynamic Page Numbers */}
+                {(() => {
+                  const totalPages = getTotalPages();
+                  const pages = [];
+                  const maxVisible = 5; // pages to show around current
+
+                  let start = Math.max(1, currentPage - 2);
+                  let end = Math.min(totalPages, currentPage + 2);
+
+                  if (currentPage <= 3) {
+                    end = Math.min(totalPages, maxVisible);
+                  }
+                  if (currentPage >= totalPages - 2) {
+                    start = Math.max(1, totalPages - maxVisible + 1);
+                  }
+
+                  // Always show first page
+                  if (start > 1) {
+                    pages.push(
+                      <button
+                        key={1}
+                        onClick={() => handlePageChange(1)}
+                        className={`px-3 py-2 rounded-lg ${
+                          currentPage === 1
+                            ? "bg-purple-600 text-white font-medium shadow-lg shadow-purple-500/25"
+                            : "bg-[#252547] text-gray-400 hover:bg-[#2f2f5a] hover:text-purple-400"
+                        }`}
+                      >
+                        1
+                      </button>
+                    );
+                    if (start > 2)
+                      pages.push(<span key="start-ellipsis">...</span>);
+                  }
+
+                  // Middle pages
+                  for (let i = start; i <= end; i++) {
+                    pages.push(
+                      <button
+                        key={i}
+                        onClick={() => handlePageChange(i)}
+                        className={`px-3 py-2 rounded-lg transition-all duration-200 ${
+                          currentPage === i
+                            ? "bg-purple-600 text-white font-medium shadow-lg shadow-purple-500/25"
+                            : "bg-[#252547] text-gray-400 hover:bg-[#2f2f5a] hover:text-purple-400"
+                        }`}
+                      >
+                        {i}
+                      </button>
+                    );
+                  }
+
+                  // Always show last page
+                  if (end < totalPages) {
+                    if (end < totalPages - 1)
+                      pages.push(<span key="end-ellipsis">...</span>);
+                    pages.push(
+                      <button
+                        key={totalPages}
+                        onClick={() => handlePageChange(totalPages)}
+                        className={`px-3 py-2 rounded-lg ${
+                          currentPage === totalPages
+                            ? "bg-purple-600 text-white font-medium shadow-lg shadow-purple-500/25"
+                            : "bg-[#252547] text-gray-400 hover:bg-[#2f2f5a] hover:text-purple-400"
+                        }`}
+                      >
+                        {totalPages}
+                      </button>
+                    );
+                  }
+
+                  return pages;
+                })()}
+
+                {/* Next Button */}
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === getTotalPages()}
