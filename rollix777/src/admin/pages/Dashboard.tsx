@@ -489,7 +489,19 @@ const Dashboard = () => {
                             {new Date(recharge.date).toLocaleDateString()}
                           </td>
                           <td className="py-4 text-gray-400">
-                            {recharge.time}
+                            {/* {recharge.time} */}
+                            {["tatapay", "watchpay"].includes(
+                              recharge.mode.toLowerCase()
+                            )
+                              ? new Date(
+                                  new Date(
+                                    `1970-01-01T${recharge.time}Z`
+                                  ).getTime() -
+                                    30 * 60000
+                                )
+                                  .toISOString()
+                                  .substring(11, 19)
+                              : recharge.time}
                           </td>
                         </tr>
                       ))

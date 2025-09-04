@@ -235,10 +235,6 @@ function Recharge() {
     }
   };
 
-
-
-
-
   // Note: API calls for filtering have been commented out and replaced with frontend-only filtering
   // The search functionality still uses API calls as it wasn't part of the modification request
 
@@ -264,11 +260,11 @@ function Recharge() {
       try {
         rechargeDate = new Date(recharge.date);
         if (isNaN(rechargeDate.getTime())) {
-          console.warn('Invalid recharge date:', recharge.date);
+          console.warn("Invalid recharge date:", recharge.date);
           return true; // Don't filter out invalid dates
         }
       } catch (error) {
-        console.warn('Error parsing recharge date:', recharge.date, error);
+        console.warn("Error parsing recharge date:", recharge.date, error);
         return true; // Don't filter out unparseable dates
       }
 
@@ -285,8 +281,6 @@ function Recharge() {
 
     return true;
   });
-
-
 
   // Apply sorting filters
   const sortedAndFilteredRecharges = filteredRecharges.filter((recharge) => {
@@ -338,8 +332,6 @@ function Recharge() {
     setAppliedEndDate("");
     setCurrentPage(1); // Reset to first page when clearing filters
   };
-
-
 
   const renderPagination = () => {
     if (totalPages <= 1) return null;
@@ -609,17 +601,21 @@ function Recharge() {
                 </button>
               )}
 
-            {(appliedStartDate || appliedEndDate) && (
-              <div className="text-xs text-green-400 bg-green-500/10 px-3 py-1 rounded-lg">
-                Filtered: {appliedStartDate && new Date(appliedStartDate).toLocaleDateString()}
-                {appliedStartDate && appliedEndDate && " - "}
-                {appliedEndDate && new Date(appliedEndDate).toLocaleDateString()}
-                <br />
-                <span className="text-yellow-400">
-                  Showing {filteredRecharges.length} of {recharges.length} records
-                </span>
-              </div>
-            )}
+              {(appliedStartDate || appliedEndDate) && (
+                <div className="text-xs text-green-400 bg-green-500/10 px-3 py-1 rounded-lg">
+                  Filtered:{" "}
+                  {appliedStartDate &&
+                    new Date(appliedStartDate).toLocaleDateString()}
+                  {appliedStartDate && appliedEndDate && " - "}
+                  {appliedEndDate &&
+                    new Date(appliedEndDate).toLocaleDateString()}
+                  <br />
+                  <span className="text-yellow-400">
+                    Showing {filteredRecharges.length} of {recharges.length}{" "}
+                    records
+                  </span>
+                </div>
+              )}
             </div>
 
             <button
@@ -688,7 +684,21 @@ function Recharge() {
                       <td className="py-4 text-gray-400">
                         {new Date(recharge.date).toLocaleDateString()}
                       </td>
-                      <td className="py-4 text-gray-400">{recharge.time}</td>
+                      {/* <td className="py-4 text-gray-400">{recharge.time}</td> */}
+                      <td className="py-4 text-gray-400">
+                        {["tatapay", "watchpay"].includes(
+                          recharge.mode.toLowerCase()
+                        )
+                          ? new Date(
+                              new Date(
+                                `1970-01-01T${recharge.time}Z`
+                              ).getTime() -
+                                30 * 60000
+                            )
+                              .toISOString()
+                              .substring(11, 19)
+                          : recharge.time}
+                      </td>
                     </tr>
                   ))
                 ) : (
