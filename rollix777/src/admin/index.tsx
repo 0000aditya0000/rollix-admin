@@ -15,6 +15,7 @@ import QueryManagement from "./pages/QueryManagement";
 import Coupon from "./pages/Coupon";
 import Recharge from "./pages/Recharge";
 import UserActivity from "./components/UserActivity";
+import AddFunds from "./pages/AddFunds";
 
 // import Settings from './pages/Settings';
 
@@ -42,6 +43,7 @@ const AdminRoutes = () => {
         <Route path="games" element={<Games />} />
         <Route path="kyc-requests" element={<KYCRequest />} />
         <Route path="user-activity" element={<UserActivity />} />
+        <Route path="add-funds" element={<AddFunds />} />
         {/* <Route path="settings" element={<Settings />} /> */}
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Route>
