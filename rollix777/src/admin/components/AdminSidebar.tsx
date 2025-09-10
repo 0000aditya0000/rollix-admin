@@ -16,6 +16,7 @@ import {
   MessageCircleQuestion,
   Shield,
   FileCheck,
+  DollarSign,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -72,6 +73,11 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
       icon: <Shield size={20} />,
       label: "Login Activity",
       path: "/admin/user-activity",
+    },
+    {
+      icon: <DollarSign size={20} />,
+      label: "Add Funds",
+      path: "/admin/add-funds",
     },
     {
       icon: <Settings size={20} />,
