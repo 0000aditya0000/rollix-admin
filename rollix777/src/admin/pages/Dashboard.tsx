@@ -2,585 +2,313 @@ import React, { useEffect, useState } from "react";
 import {
   Users,
   DollarSign,
-  Eye,
-  Check,
-  X,
-  User,
-  IndianRupeeIcon,
+  Wallet,
+  ArrowDownCircle,
+  ArrowUpCircle,
   Loader2,
 } from "lucide-react";
 import axios from "axios";
-import { baseUrl } from "../../lib/config/server";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { baseUrl } from "../../lib/config/server";
 import { getAllRecharges } from "../../lib/services/rechargeService";
-
-interface KYCRequest {
-  user_id: number;
-  username: string;
-  name: string;
-  email: string;
-  phone: string;
-  referral_code: string;
-  kyc_status: {
-    code: number;
-    text: string;
-  };
-  documents: {
-    aadharfront: string | null;
-    aadharback: string | null;
-    pan: string | null;
-  };
-  created_at: string;
-}
-
-interface Withdrawal {
-  withdrawalId: number;
-  amount: string;
-  cryptoname: string;
-  requestDate: string;
-  withdrawalStatus: {
-    code: string;
-    status: string;
-  };
-  user: {
-    username: string | null;
-    name: string | null;
-    email: string | null;
-    phone: string | null;
-  };
-  withdrawalDetails: {
-    accountName?: string | null;
-    accountNumber?: string | null;
-    ifscCode?: string | null;
-    branch?: string | null;
-    bankAccountStatus?: string | null;
-    walletAddress?: string | null;
-    networkType?: string | null;
-  };
-}
-
-interface TransactionData {
-  total_transactions: number;
-  total_amount: string;
-}
-
-interface Recharge {
-  recharge_id: number;
-  order_id: string;
-  userId: number;
-  amount: string;
-  type: string;
-  mode: string;
-  status: string;
-  date: string;
-  time: string;
-}
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<
-    "kyc" | "withdrawals" | "recharge"
-  >("recharge");
-  const [users, setUsers] = useState([]);
-  const [error, setError] = useState<string | null>(null);
-  const [kycRequests, setKycRequests] = useState<KYCRequest[]>([]);
-  const [withdrawalRequests, setWithdrawalRequests] = useState<Withdrawal[]>(
-    []
+  const [users, setUsers] = useState<any[]>([]);
+  const [recharges, setRecharges] = useState<any[]>([]);
+  const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [summary, setSummary] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"recharge" | "withdrawals">(
+    "recharge"
   );
-  const [loadingKYC, setLoadingKYC] = useState(true);
-  const [loadingWithdrawals, setLoadingWithdrawals] = useState(true);
-  const [loadingTotalTransaction, setLoadingTotalTransaction] = useState(true);
-  const [transactionData, setTransactionData] =
-    useState<TransactionData | null>(null);
-  const [recharges, setRecharges] = useState<Recharge[]>([]);
 
+  // ===== Helpers =====
+  const safeDate = (dateStr: any) => {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? null : d;
+  };
+
+  // ===== Fetch Data =====
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchAll = async () => {
       try {
-        const response = await axios.get(
-          "https://api.rollix777.com/api/user/allusers"
+        setLoading(true);
+
+        // Users
+        const usersRes = await axios.get(`${baseUrl}/api/user/allusers`);
+        setUsers(usersRes.data || []);
+
+        // Recharges
+        let rechargeRes: any = {};
+        try {
+          rechargeRes = await getAllRecharges(1, 1000);
+        } catch (err) {
+          console.error("Error fetching recharges:", err);
+        }
+        setRecharges(rechargeRes?.data || rechargeRes?.recharges || []);
+
+        // Withdrawals (for listing only, not stats)
+        let withdrawalRes: any = {};
+        try {
+          withdrawalRes = await axios.get(
+            `${baseUrl}/api/wallet/withdrawl-requests/0?page=1&limit=50`
+          );
+        } catch (err) {
+          console.error("Error fetching withdrawals:", err);
+        }
+        setWithdrawals(
+          withdrawalRes?.data?.data || withdrawalRes?.data?.withdrawals || []
         );
-        setUsers(response.data);
-      } catch (error: any) {
-        setError(error.message || "Failed to fetch users");
-        toast.error("Failed to fetch users");
+
+        // Wallet summary (stats)
+        let summaryRes: any = {};
+        try {
+          summaryRes = await axios.get(`http://localhost:5000/api/wallet/summary`);
+        } catch (err) {
+          console.error("Error fetching wallet summary:", err);
+        }
+        setSummary(summaryRes?.data || null);
+      } catch (err: any) {
+        toast.error("Failed to load dashboard data");
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
-
-    fetchUsers();
+    fetchAll();
   }, []);
 
-  useEffect(() => {
-    const fetchKYCRequests = async () => {
-      try {
-        setLoadingKYC(true);
-        const url = new URL("api/user/pending-kyc", baseUrl);
-        url.searchParams.append("status", "0"); // Pending status
-        url.searchParams.append("page", "1");
-        url.searchParams.append("limit", "5");
+  // ===== Metrics (from API) =====
+  const totalUsers = summary?.totalUsers ?? 0;
+  const todayUsersCount = summary?.totalUsersJoinToday ?? 0; // Total Users Join (Today)
+  const todaysWithdrawal = summary?.todaysTotalWithdrawalAmount ?? 0; // Today's Withdrawal
+  const userBalance = summary?.totalWalletBalanceOfUsers ?? 0; // Optional
 
-        const response = await axios.get(url.toString());
-        if (response.data.success) {
-          setKycRequests(response.data.data || []);
-        } else {
-          throw new Error(
-            response.data.message || "Failed to fetch KYC requests"
-          );
-        }
-      } catch (error: any) {
-        toast.error(error.message || "Failed to fetch KYC requests");
-      } finally {
-        setLoadingKYC(false);
-      }
-    };
+  // ===== Metrics (still from frontend for recharges) =====
+  const totalRecharge = recharges
+    .filter((r: any) => r.status?.toLowerCase() === "success")
+    .reduce((sum, r) => sum + Number(r.amount || 0), 0);
 
-    const fetchWithdrawalRequests = async () => {
-      try {
-        setLoadingWithdrawals(true);
-        const response = await axios.get(
-          `${baseUrl}/api/wallet/withdrawl-requests/0?page=1&limit=5`
-        );
-        if (response.data.success) {
-          setWithdrawalRequests(response.data.data || []);
-        } else {
-          throw new Error(
-            response.data.message || "Failed to fetch withdrawal requests"
-          );
-        }
-      } catch (error: any) {
-        toast.error(error.message || "Failed to fetch withdrawal requests");
-      } finally {
-        setLoadingWithdrawals(false);
-      }
-    };
+  const totalDeposit = recharges.reduce(
+    (sum, r) => sum + Number(r.amount || 0),
+    0
+  );
 
-    const fetchTodayTotalTransaction = async () => {
-      try {
-        setLoadingTotalTransaction(true);
-        const response = await axios.get(
-          `${baseUrl}/api/recharge/report/today-recharge-summary`
-        );
-        if (response.data.success) {
-          setTransactionData(response.data || []);
-        } else {
-          throw new Error(
-            response.data.message || "Failed to fetch recharge summary"
-          );
-        }
-      } catch (error: any) {
-        toast.error(error.message || "Failed to fetch recharge summary");
-      } finally {
-        setLoadingTotalTransaction(false);
-      }
-    };
+  const pendingRecharge = recharges.filter(
+    (r: any) => r.status?.toLowerCase() === "pending"
+  ).length;
 
-    const fetchRecharges = async () => {
-      try {
-        const response = await getAllRecharges(1, 1000); // Get all records to sort by date
-        console.log("Recharge Response:", response); // Debug log
+  const successRecharge = recharges.filter(
+    (r: any) => r.status?.toLowerCase() === "success"
+  ).length;
 
-        // Handle different possible response structures
-        if (response && response.success !== false) {
-          let rechargeData: any[] = [];
+  // ===== Stat Card Component =====
+  const StatCard = ({
+    title,
+    value,
+    icon: Icon,
+    color,
+  }: {
+    title: string;
+    value: string | number;
+    icon: any;
+    color: string;
+  }) => (
+    <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-xl p-6 border border-purple-500/20 flex items-center justify-between shadow-lg">
+      <div>
+        <p className="text-gray-400 text-sm">{title}</p>
+        <h2 className="text-3xl font-bold text-white">{value}</h2>
+      </div>
+      <div className={`p-3 rounded-xl ${color}`}>
+        <Icon className="w-8 h-8 text-white" />
+      </div>
+    </div>
+  );
 
-          // Case 1: response.data is an array
-          if (response.data && Array.isArray(response.data)) {
-            rechargeData = response.data;
-          }
-          // Case 2: response.recharges is an array
-          else if (response.recharges && Array.isArray(response.recharges)) {
-            rechargeData = response.recharges;
-          }
-          // Case 3: response itself is an array
-          else if (Array.isArray(response)) {
-            rechargeData = response;
-          }
-          // Case 4: response has a different structure but contains data
-          else if (response && typeof response === "object") {
-            // Try to find the data array in the response
-            const dataArray =
-              response.data ||
-              response.recharges ||
-              response.records ||
-              response.items;
-            if (Array.isArray(dataArray)) {
-              rechargeData = dataArray;
-            } else {
-              console.error("No valid data array found in response:", response);
-              toast.error("Invalid response format");
-              return;
-            }
-          } else {
-            console.error("Unexpected response structure:", response);
-            toast.error("Invalid response format");
-            return;
-          }
-
-          // Filter successful recharges first
-          const successfulRecharges = rechargeData.filter(
-            (recharge: any) => recharge.status.toLowerCase() === "success"
-          );
-
-          // Sort by date (latest first) and take the first 5 records
-          const sortedRecharges = successfulRecharges.sort((a: any, b: any) => {
-            const dateA = new Date(a.date);
-            const dateB = new Date(b.date);
-
-            // First sort by date (most recent first)
-            if (dateA.getTime() !== dateB.getTime()) {
-              return dateB.getTime() - dateA.getTime();
-            }
-
-            // If dates are the same, sort by time (most recent first)
-            const timeA = a.time || "00:00:00";
-            const timeB = b.time || "00:00:00";
-            return timeB.localeCompare(timeA);
-          });
-
-          // Take the latest 5 successful records
-          setRecharges(sortedRecharges.slice(0, 5));
-        } else {
-          // Handle error response
-          const errorMessage = response?.message || "Failed to fetch recharges";
-          console.error("API Error:", response);
-          toast.error(errorMessage);
-        }
-      } catch (error: any) {
-        console.error("Fetch error:", error);
-        const errorMessage = error?.message || "Failed to fetch recharges";
-        toast.error(errorMessage);
-      }
-    };
-
-    // fetchKYCRequests();
-    fetchWithdrawalRequests();
-    fetchTodayTotalTransaction();
-    fetchRecharges();
-  }, []);
-
-  const totalUsers = users.length;
-  const totalTransactions = "₹0";
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  const getStatusColor = (code: number | string) => {
-    switch (code.toString()) {
-      case "1":
-        return "text-green-400";
-      case "2":
-        return "text-red-400";
-      case "0":
-        return "text-yellow-400";
-      default:
-        return "text-gray-400";
-    }
-  };
-
-  const handleViewAllUsers = () => {
-    navigate("/admin/users");
-  };
-
-  if (error) {
-    return <div className="text-red-500 text-center py-6">Error: {error}</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="animate-spin text-purple-500" size={40} />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Users Card */}
-        <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-xl border border-purple-500/20 overflow-hidden">
-          <div className="p-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-gray-400 mb-1">Total Users</p>
-                <h2 className="text-3xl font-bold text-white">
-                  {totalUsers?.toLocaleString()}
-                </h2>
-              </div>
-              <div className="p-3 bg-purple-500/20 rounded-xl">
-                <Users className="w-8 h-8 text-purple-400" />
-              </div>
-            </div>
-            <button
-              onClick={handleViewAllUsers}
-              className="mt-4 py-2 px-4 bg-[#1A1A2E] text-purple-400 rounded-lg text-sm hover:bg-purple-500/10 transition-colors flex items-center gap-2"
-            >
-              <Eye size={16} />
-              <span>View All Users</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Transactions Card */}
-        <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-xl border border-purple-500/20 overflow-hidden">
-          <div className="p-6">
-            <div className="flex justify-between items-start">
-              {transactionData && (
-                <div>
-                  <p className="text-gray-400 mb-1">Total Transactions</p>
-                  <h2 className="text-3xl font-bold text-white">
-                    ₹ {transactionData.total_amount}
-                  </h2>
-                  <p className="text-green-400 text-sm mt-2">
-                    {transactionData.total_transactions} Total Transactions
-                  </p>
-                </div>
-              )}
-              <div className="p-3 bg-green-500/20 rounded-xl">
-                <IndianRupeeIcon className="w-8 h-8 text-green-400" />
-              </div>
-            </div>
-            {/* <button className="mt-4 py-2 px-4 bg-[#1A1A2E] text-green-400 rounded-lg text-sm hover:bg-green-500/10 transition-colors flex items-center gap-2">
-              <Eye size={16} />
-              <span>View All Transactions</span>
-            </button> */}
-          </div>
-        </div>
+      {/* ===== Stats Cards ===== */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+        <StatCard
+          title="Total Users"
+          value={totalUsers}
+          icon={Users}
+          color="bg-purple-500/30"
+        />
+        <StatCard
+          title="Total Users Join (Today)"
+          value={todayUsersCount}
+          icon={Users}
+          color="bg-pink-500/30"
+        />
+        <StatCard
+          title="Today's Withdrawal"
+          value={`₹${todaysWithdrawal.toLocaleString()}`}
+          icon={ArrowUpCircle}
+          color="bg-red-600/30"
+        />
+        <StatCard
+          title="User Balance"
+          value={`₹${userBalance.toLocaleString()}`}
+          icon={Wallet}
+          color="bg-indigo-500/30"
+        />
+        <StatCard
+          title="Total Recharge"
+          value={`₹${totalRecharge.toLocaleString()}`}
+          icon={DollarSign}
+          color="bg-green-500/30"
+        />
+        <StatCard
+          title="Total Deposit"
+          value={`₹${totalDeposit.toLocaleString()}`}
+          icon={Wallet}
+          color="bg-blue-500/30"
+        />
+        <StatCard
+          title="Pending Recharges"
+          value={pendingRecharge}
+          icon={ArrowDownCircle}
+          color="bg-yellow-500/30"
+        />
+        <StatCard
+          title="Success Recharge"
+          value={successRecharge}
+          icon={DollarSign}
+          color="bg-green-500/30"
+        />
       </div>
 
-      {/* Pending Requests */}
+      {/* ===== Tabs for Requests ===== */}
       <div className="bg-gradient-to-br from-[#252547] to-[#1A1A2E] rounded-xl border border-purple-500/20 overflow-hidden">
-        <div className="border-b border-purple-500/10">
-          <div className="flex">
-            {/* <button
-              className={`flex-1 py-4 px-6 text-center font-medium ${
-                activeTab === "kyc"
-                  ? "text-white border-b-2 border-purple-500"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-              onClick={() => setActiveTab("kyc")}
-            >
-              KYC Requests
-            </button> */}
-
-            <button
-              className={`flex-1 py-4 px-6 text-center font-medium ${
-                activeTab === "kyc"
-                  ? "text-white border-b-2 border-purple-500"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-              onClick={() => setActiveTab("recharge")}
-            >
-              Recharge Requests
-            </button>
-            <button
-              className={`flex-1 py-4 px-6 text-center font-medium ${
-                activeTab === "withdrawals"
-                  ? "text-white border-b-2 border-purple-500"
-                  : "text-gray-400 hover:text-gray-300"
-              }`}
-              onClick={() => setActiveTab("withdrawals")}
-            >
-              Withdrawal Requests
-            </button>
-          </div>
+        <div className="border-b border-purple-500/10 flex">
+          <button
+            className={`flex-1 py-4 px-6 font-medium ${
+              activeTab === "recharge"
+                ? "text-white border-b-2 border-purple-500"
+                : "text-gray-400"
+            }`}
+            onClick={() => setActiveTab("recharge")}
+          >
+            Recharge Requests
+          </button>
+          <button
+            className={`flex-1 py-4 px-6 font-medium ${
+              activeTab === "withdrawals"
+                ? "text-white border-b-2 border-purple-500"
+                : "text-gray-400"
+            }`}
+            onClick={() => setActiveTab("withdrawals")}
+          >
+            Withdrawal Requests
+          </button>
         </div>
 
         <div className="p-6">
-          {/* {activeTab === "kyc" ? (
-            <div className="overflow-x-auto">
-              {loadingKYC ? (
-                <div className="flex items-center justify-center p-8">
-                  <Loader2 className="animate-spin text-purple-500" size={32} />
-                </div>
-              ) : kycRequests.length === 0 ? (
-                <div className="text-center text-gray-400 py-8">
-                  No pending KYC requests
-                </div>
-              ) : (
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-left text-gray-400 text-sm">
-                      <th className="pb-4 font-medium">ID</th>
-                      <th className="pb-4 font-medium">User</th>
-                      <th className="pb-4 font-medium">Email</th>
-                      <th className="pb-4 font-medium">Date</th>
-                      <th className="pb-4 font-medium">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {kycRequests.map((request) => (
-                      <tr
-                        key={request.user_id}
-                        className="border-t border-purple-500/10 text-white"
-                      >
-                        <td className="py-4">#{request.user_id}</td>
-                        <td className="py-4">
-                          {request.name || request.username}
-                        </td>
-                        <td className="py-4">{request.email}</td>
-                        <td className="py-4">
-                          {formatDate(request.created_at)}
-                        </td>
-                        <td className="py-4">
-                          <span
-                            className={`font-medium ${getStatusColor(
-                              request.kyc_status.code
-                            )}`}
-                          >
-                            {request.kyc_status.text}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div> */}
           {activeTab === "recharge" ? (
-            <div className="bg-[#252547] rounded-xl border border-purple-500/10 p-4 shadow-lg">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-left border-b border-purple-500/10 text-sm text-gray-300">
-                      <th className="pb-4 font-medium">Order ID</th>
-                      <th className="pb-4 font-medium">User ID</th>
-                      <th className="pb-4 font-medium">Amount</th>
-                      <th className="pb-4 font-medium">Type</th>
-                      <th className="pb-4 font-medium">Mode</th>
-                      <th className="pb-4 font-medium">Status</th>
-                      <th className="pb-4 font-medium">Date</th>
-                      <th className="pb-4 font-medium">Time</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recharges && recharges.length > 0 ? (
-                      recharges.map((recharge) => (
-                        <tr
-                          key={recharge.recharge_id}
-                          className="border-b border-purple-500/10 hover:bg-purple-500/5 transition-colors text-white"
-                        >
-                          <td className="py-4 font-medium">
-                            {recharge.order_id}
-                          </td>
-                          <td className="py-4">{recharge.userId}</td>
-                          <td className="py-4 text-purple-400 font-medium">
-                            {recharge.type === "USDT" ? "$" : "₹"}{" "}
-                            {recharge.amount}
-                          </td>
-                          <td className="py-4">{recharge.type}</td>
-                          <td className="py-4">{recharge.mode}</td>
-                          <td className="py-4">
-                            <span
-                              className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-                                recharge.status.toLowerCase() === "success"
-                                  ? "bg-green-500/20 text-green-400"
-                                  : recharge.status.toLowerCase() === "failed"
-                                  ? "bg-red-500/20 text-red-400"
-                                  : "bg-yellow-500/20 text-yellow-400"
-                              }`}
-                            >
-                              {recharge.status}
-                            </span>
-                          </td>
-                          <td className="py-4 text-gray-400">
-                            {new Date(recharge.date).toLocaleDateString()}
-                          </td>
-                          <td className="py-4 text-gray-400">
-                            {/* {recharge.time} */}
-                            {["tatapay", "watchpay"].includes(
-                              recharge.mode.toLowerCase()
-                            )
-                              ? new Date(
-                                  new Date(
-                                    `1970-01-01T${recharge.time}Z`
-                                  ).getTime() -
-                                    30 * 60000
-                                )
-                                  .toISOString()
-                                  .substring(11, 19)
-                              : recharge.time}
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-gray-400 text-sm border-b border-purple-500/10">
+                    <th className="pb-3">Order ID</th>
+                    <th>User ID</th>
+                    <th>Amount</th>
+                    <th>Mode</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recharges.slice(0, 5).map((r) => {
+                    const date = safeDate(r.date);
+                    return (
+                      <tr
+                        key={r.recharge_id || r.id}
+                        className="text-white border-b border-purple-500/10"
+                      >
+                        <td className="py-3">{r.order_id}</td>
+                        <td>{r.userId}</td>
+                        <td className="text-purple-400">₹{r.amount}</td>
+                        <td>{r.mode}</td>
                         <td
-                          colSpan={8}
-                          className="py-4 text-center text-gray-400"
+                          className={`${
+                            r.status === "success"
+                              ? "text-green-400"
+                              : r.status === "pending"
+                              ? "text-yellow-400"
+                              : "text-red-400"
+                          }`}
                         >
-                          No recharges request found
+                          {r.status}
                         </td>
+                        <td>{date ? date.toLocaleDateString() : "-"}</td>
                       </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              {loadingWithdrawals ? (
-                <div className="flex items-center justify-center p-8">
-                  <Loader2 className="animate-spin text-purple-500" size={32} />
-                </div>
-              ) : withdrawalRequests.length === 0 ? (
-                <div className="text-center text-gray-400 py-8">
-                  No pending withdrawal requests
-                </div>
-              ) : (
-                <table className="w-full">
-                  <thead>
-                    <tr className="text-left text-gray-400 text-sm">
-                      <th className="pb-4 font-medium">ID</th>
-                      <th className="pb-4 font-medium">User</th>
-                      <th className="pb-4 font-medium">Amount</th>
-                      <th className="pb-4 font-medium">Method</th>
-                      <th className="pb-4 font-medium">Date</th>
-                      <th className="pb-4 font-medium">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {withdrawalRequests.map((request) => (
+              <table className="w-full">
+                <thead>
+                  <tr className="text-gray-400 text-sm border-b border-purple-500/10">
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {withdrawals.slice(0, 5).map((w) => {
+                    const date = safeDate(w.createdAt);
+                    return (
                       <tr
-                        key={request.withdrawalId}
-                        className="border-t border-purple-500/10 text-white"
+                        key={w.withdrawalId || w.id}
+                        className="text-white border-b border-purple-500/10"
                       >
-                        <td className="py-4">#{request.withdrawalId}</td>
-                        <td className="py-4">
-                          {request.user.name || request.user.username}
+                        <td className="py-3">#{w.withdrawalId || w.id}</td>
+                        <td>{w.user?.name || w.user?.username || w.userId}</td>
+                        <td className="text-red-400">
+                          ₹{w.amount} {w.cryptoname || ""}
                         </td>
-                        <td className="py-4">
-                          <span className="font-medium">
-                            {Number(request.amount).toLocaleString()}{" "}
-                            {request.cryptoname.toUpperCase()}
-                          </span>
+                        <td>
+                          {"walletAddress" in (w.withdrawalDetails || {})
+                            ? "CRYPTO"
+                            : "BANK"}
                         </td>
-                        <td className="py-4">
-                          <span className="font-medium">
-                            {"walletAddress" in request.withdrawalDetails
-                              ? "CRYPTO"
-                              : "BANK TRANSFER"}
-                          </span>
+                        <td
+                          className={`${
+                            w.withdrawalStatus?.code === "0"
+                              ? "text-yellow-400"
+                              : w.withdrawalStatus?.code === "1"
+                              ? "text-green-400"
+                              : "text-red-400"
+                          }`}
+                        >
+                          {w.withdrawalStatus?.status || "Unknown"}
                         </td>
-                        <td className="py-4">
-                          {formatDate(request.requestDate)}
-                        </td>
-                        <td className="py-4">
-                          <span
-                            className={`font-medium ${getStatusColor(
-                              request.withdrawalStatus.code
-                            )}`}
-                          >
-                            {request.withdrawalStatus.status}
-                          </span>
-                        </td>
+                        <td>{date ? date.toLocaleDateString() : "-"}</td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
