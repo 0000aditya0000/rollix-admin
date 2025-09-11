@@ -12,13 +12,17 @@ import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { baseUrl } from "../../lib/config/server";
 import { getAllRecharges } from "../../lib/services/rechargeService";
+import {
+  fetchWalletSummary,
+  fetchTodayBetStats,
+} from "../../lib/services/WalletServices";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [users, setUsers] = useState<any[]>([]);
   const [recharges, setRecharges] = useState<any[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>(null);
+  const [betStats, setBetStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"recharge" | "withdrawals">(
     "recharge"
@@ -31,15 +35,19 @@ const Dashboard = () => {
     return isNaN(d.getTime()) ? null : d;
   };
 
+  const formatNumber = (num: number) => {
+    if (!num) return 0;
+    if (num >= 10000000) return (num / 10000000).toFixed(1).replace(/\.0$/, "") + " Cr";
+    if (num >= 100000) return (num / 100000).toFixed(1).replace(/\.0$/, "") + " L";
+    if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, "") + " K";
+    return num.toString();
+  };
+
   // ===== Fetch Data =====
   useEffect(() => {
     const fetchAll = async () => {
       try {
         setLoading(true);
-
-        // Users
-        const usersRes = await axios.get(`${baseUrl}/api/user/allusers`);
-        setUsers(usersRes.data || []);
 
         // Recharges
         let rechargeRes: any = {};
@@ -50,7 +58,7 @@ const Dashboard = () => {
         }
         setRecharges(rechargeRes?.data || rechargeRes?.recharges || []);
 
-        // Withdrawals (for listing only, not stats)
+        // Withdrawals
         let withdrawalRes: any = {};
         try {
           withdrawalRes = await axios.get(
@@ -63,14 +71,23 @@ const Dashboard = () => {
           withdrawalRes?.data?.data || withdrawalRes?.data?.withdrawals || []
         );
 
-        // Wallet summary (stats)
+        // Wallet summary
         let summaryRes: any = {};
         try {
-          summaryRes = await axios.get(`http://localhost:5000/api/wallet/summary`);
+          summaryRes = await fetchWalletSummary();
         } catch (err) {
           console.error("Error fetching wallet summary:", err);
         }
-        setSummary(summaryRes?.data || null);
+        setSummary(summaryRes || null);
+
+        // Today Bet Stats
+        let betStatsRes: any = {};
+        try {
+          betStatsRes = await fetchTodayBetStats();
+        } catch (err) {
+          console.error("Error fetching bet stats:", err);
+        }
+        setBetStats(betStatsRes || null);
       } catch (err: any) {
         toast.error("Failed to load dashboard data");
         console.error(err);
@@ -78,16 +95,22 @@ const Dashboard = () => {
         setLoading(false);
       }
     };
+
     fetchAll();
   }, []);
 
   // ===== Metrics (from API) =====
   const totalUsers = summary?.totalUsers ?? 0;
-  const todayUsersCount = summary?.totalUsersJoinToday ?? 0; // Total Users Join (Today)
-  const todaysWithdrawal = summary?.todaysTotalWithdrawalAmount ?? 0; // Today's Withdrawal
-  const userBalance = summary?.totalWalletBalanceOfUsers ?? 0; // Optional
+  const todayUsersCount = summary?.totalUsersJoinToday ?? 0;
+  const todaysWithdrawal = summary?.todaysTotalWithdrawalAmount ?? 0;
+  const userBalance = summary?.totalWalletBalanceOfUsers ?? 0;
 
-  // ===== Metrics (still from frontend for recharges) =====
+  // ===== Bet Stats =====
+  const todaysTotalBet = betStats?.todaysTotalBet ?? 0;
+  const todaysTotalWin = betStats?.todaysTotalWin ?? 0;
+  const todaysTotalProfit = betStats?.todaysTotalProfit ?? 0;
+
+  // ===== Metrics (frontend only) =====
   const totalRecharge = recharges
     .filter((r: any) => r.status?.toLowerCase() === "success")
     .reduce((sum, r) => sum + Number(r.amount || 0), 0);
@@ -144,51 +167,70 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         <StatCard
           title="Total Users"
-          value={totalUsers}
+          value={formatNumber(totalUsers)}
           icon={Users}
           color="bg-purple-500/30"
         />
         <StatCard
           title="Total Users Join (Today)"
-          value={todayUsersCount}
+          value={formatNumber(todayUsersCount)}
           icon={Users}
           color="bg-pink-500/30"
         />
         <StatCard
           title="Today's Withdrawal"
-          value={`₹${todaysWithdrawal.toLocaleString()}`}
+          value={`₹${formatNumber(todaysWithdrawal)}`}
           icon={ArrowUpCircle}
           color="bg-red-600/30"
         />
         <StatCard
           title="User Balance"
-          value={`₹${userBalance.toLocaleString()}`}
+          value={`₹${formatNumber(userBalance)}`}
           icon={Wallet}
           color="bg-indigo-500/30"
         />
         <StatCard
           title="Total Recharge"
-          value={`₹${totalRecharge.toLocaleString()}`}
+          value={`₹${formatNumber(totalRecharge)}`}
           icon={DollarSign}
           color="bg-green-500/30"
         />
         <StatCard
           title="Total Deposit"
-          value={`₹${totalDeposit.toLocaleString()}`}
+          value={`₹${formatNumber(totalDeposit)}`}
           icon={Wallet}
           color="bg-blue-500/30"
         />
         <StatCard
           title="Pending Recharges"
-          value={pendingRecharge}
+          value={formatNumber(pendingRecharge)}
           icon={ArrowDownCircle}
           color="bg-yellow-500/30"
         />
         <StatCard
           title="Success Recharge"
-          value={successRecharge}
+          value={formatNumber(successRecharge)}
           icon={DollarSign}
           color="bg-green-500/30"
+        />
+        {/* New Bet Stats */}
+        <StatCard
+          title="Today's Total Bet"
+          value={`₹${formatNumber(Number(todaysTotalBet))}`}
+          icon={ArrowUpCircle}
+          color="bg-blue-500/30"
+        />
+        <StatCard
+          title="Today's Total Win"
+          value={`₹${formatNumber(Number(todaysTotalWin))}`}
+          icon={ArrowDownCircle}
+          color="bg-green-500/30"
+        />
+        <StatCard
+          title="Today's Profit"
+          value={`₹${formatNumber(Number(todaysTotalProfit))}`}
+          icon={DollarSign}
+          color="bg-red-500/30"
         />
       </div>
 
