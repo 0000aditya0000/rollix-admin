@@ -10,3 +10,22 @@ export const fetchUserWallets = async (userId) => {
     throw error;
   }
 }; 
+export const fetchWalletSummary = async () => {
+  try {
+    const res = await axios.get(`${baseUrl}/api/wallet/summary`);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching wallet summary:", err);
+    throw err;
+  }
+};
+
+export const fetchTodayBetStats = async () => {
+  try {
+    const res = await axios.get(`${baseUrl}/api/admin/today-bet-stats`);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching today bet stats:", err);
+    throw err;
+  }
+};
