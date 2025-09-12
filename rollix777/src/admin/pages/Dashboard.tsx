@@ -382,7 +382,7 @@ const Dashboard = () => {
                         </td>
                         <td className="text-left px-4">{w.user.userId}</td>
                         <td className="text-right px-4 text-red-400">
-                          ₹{w.walletBalance.after}
+                          ₹{w.amountRequested}
                         </td>
                         {/* <td
                           className={`text-left px-4 ${
