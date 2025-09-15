@@ -16,6 +16,7 @@ import Coupon from "./pages/Coupon";
 import Recharge from "./pages/Recharge";
 import UserActivity from "./components/UserActivity";
 import AddFunds from "./pages/AddFunds";
+import PaymentGateways from "./pages/PaymentGateway";
 
 // import Settings from './pages/Settings';
 
@@ -44,6 +45,7 @@ const AdminRoutes = () => {
         <Route path="kyc-requests" element={<KYCRequest />} />
         <Route path="user-activity" element={<UserActivity />} />
         <Route path="add-funds" element={<AddFunds />} />
+        <Route path="payment-gateways" element={<PaymentGateways />} />
         {/* <Route path="settings" element={<Settings />} /> */}
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Route>
