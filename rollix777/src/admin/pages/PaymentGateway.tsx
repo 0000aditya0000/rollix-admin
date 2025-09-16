@@ -93,18 +93,16 @@ const PaymentGateways: React.FC = () => {
         (g) => g.display_order === newOrder && g.id !== gatewayId
       );
 
-      // First, remove order from the conflicting gateway
       if (conflictGateway) {
         await updateGateway({
           name: conflictGateway.name,
-          display_order: null,
+          display_order: 0,
         });
       }
 
       // Then, update the selected gateway with the new order
       await updateGateway({ name: gateway.name, display_order: newOrder });
 
-      // Update state locally
       setGateways((prev) =>
         prev.map((g) => {
           if (g.id === gatewayId) {
