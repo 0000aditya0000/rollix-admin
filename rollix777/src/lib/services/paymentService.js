@@ -31,10 +31,11 @@ export const getAllGateways = async () => {
   return await request("/api/admin/gateways", "GET");
 };
 
-// ✅ Toggle gateway status (admin)
-export const toggleGatewayStatus = async (name, status) => {
+// status and order are optional now
+export const updateGateway = async ({ name, status, display_order }) => {
   return await request("/api/admin/gateway-update", "POST", {
     name,
-    status,
+    ...(status !== undefined ? { status } : {}),
+    ...(display_order !== undefined ? { display_order } : {}),
   });
 };
