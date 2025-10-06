@@ -123,3 +123,8 @@ getGameNameById(null) // "Unknown Game"
 ## Integration
 
 This utility is designed to work seamlessly with the Userdetail component to display human-readable game names instead of numeric game IDs in bet history tables.
+
+
+
+
+

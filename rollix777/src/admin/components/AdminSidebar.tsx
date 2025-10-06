@@ -18,6 +18,7 @@ import {
   FileCheck,
   DollarSign,
   Wallet2,
+  Bell,
 } from "lucide-react";
 
 interface AdminSidebarProps {
@@ -84,6 +85,11 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
       icon: <Wallet2 size={20} />,
       label: "Payment Gateways",
       path: "/admin/payment-gateways",
+    },
+    {
+      icon: <Bell size={20} />,
+      label: "Custom Notification",
+      path: "/admin/custom-notification",
     },
     {
       icon: <Settings size={20} />,
