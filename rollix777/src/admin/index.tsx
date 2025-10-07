@@ -18,6 +18,7 @@ import UserActivity from "./components/UserActivity";
 import AddFunds from "./pages/AddFunds";
 import PaymentGateways from "./pages/PaymentGateway";
 import CustomNotification from "./pages/CustomNotification";
+import InvitationBonus from "./pages/InvitationBonus";
 
 // import Settings from './pages/Settings';
 
@@ -48,6 +49,7 @@ const AdminRoutes = () => {
         <Route path="add-funds" element={<AddFunds />} />
         <Route path="payment-gateways" element={<PaymentGateways />} />
         <Route path="custom-notification" element={<CustomNotification />} />
+        <Route path="invitation-bonus" element={<InvitationBonus />} />
         {/* <Route path="settings" element={<Settings />} /> */}
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Route>
