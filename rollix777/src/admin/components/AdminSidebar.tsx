@@ -92,6 +92,11 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({
       path: "/admin/custom-notification",
     },
     {
+      icon: <DollarSign size={20} />,
+      label: "Invitation Bonus",
+      path: "/admin/invitation-bonus",
+    },
+    {
       icon: <Settings size={20} />,
       label: "Settings",
       path: "/admin/settings",
