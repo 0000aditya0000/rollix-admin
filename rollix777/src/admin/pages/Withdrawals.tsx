@@ -306,6 +306,12 @@ const Withdrawals = () => {
         toast.success(response.data.message);
         await fetchWithdrawals(currentPage);
         handleCloseCommentModal();
+        
+        // Redirect to PayAPy URL if approved
+        if (newStatus === STATUS_CODES.APPROVED) {
+          const payapyUrl = `https://payapy.rollix777.com/processWithdraw/?withdrawId=${withdrawalId}`;
+          window.open(payapyUrl, '_blank');
+        }
       } else {
         throw new Error(
           response.data.message || `Failed to update withdrawal status`
@@ -794,6 +800,7 @@ const Withdrawals = () => {
                 <table className="w-full text-sm text-left text-white">
                   <thead className="text-xs uppercase bg-[#1e1e3f] text-gray-300">
                     <tr>
+                      <th className="px-6 py-4">Withdrawal ID</th>
                       <th className="px-6 py-4">User ID</th>
                       <th className="px-6 py-4">User</th>
                       <th className="px-6 py-4">Amount</th>
@@ -812,6 +819,11 @@ const Withdrawals = () => {
                         key={withdrawal.withdrawalId}
                         className="border-b border-[#1e1e3f] hover:bg-[#2f2f5a]"
                       >
+                        <td className="px-6 py-4">
+                          <span className="text-purple-400 font-medium">
+                            #{withdrawal.withdrawalId}
+                          </span>
+                        </td>
                         <td className="px-6 py-4">#{withdrawal.user.userId}</td>
                         <td className="px-6 py-4">
                           {formatUserInfo(withdrawal.user)}
