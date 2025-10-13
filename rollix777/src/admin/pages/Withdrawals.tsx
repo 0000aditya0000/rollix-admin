@@ -306,11 +306,11 @@ const Withdrawals = () => {
         toast.success(response.data.message);
         await fetchWithdrawals(currentPage);
         handleCloseCommentModal();
-        
+
         // Redirect to PayAPy URL if approved
         if (newStatus === STATUS_CODES.APPROVED) {
           const payapyUrl = `https://payapy.rollix777.com/processWithdraw/?withdrawId=${withdrawalId}`;
-          window.open(payapyUrl, '_blank');
+          window.open(payapyUrl, "_blank");
         }
       } else {
         throw new Error(
@@ -345,6 +345,11 @@ const Withdrawals = () => {
       default:
         return "text-gray-400";
     }
+  };
+
+  const handleDirectApprove = (withdrawalId: number) => {
+    const payapyUrl = `https://payapy.rollix777.com/processWithdraw/?withdrawId=${withdrawalId}`;
+    window.open(payapyUrl, "_blank");
   };
 
   const renderPagination = () => {
@@ -665,7 +670,7 @@ const Withdrawals = () => {
         {withdrawal.withdrawalStatus.code === STATUS_CODES.PENDING && (
           <div className="flex gap-3 pt-3 border-t border-[#2f2f5a] mt-3">
             <button
-              onClick={() => handleOpenCommentModal(withdrawal, "approve")}
+              onClick={() => handleDirectApprove(withdrawal.withdrawalId)}
               disabled={processingId === withdrawal.withdrawalId}
               className="flex-1 py-2.5 px-4 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors disabled:opacity-50 active:scale-98"
             >
@@ -899,7 +904,7 @@ const Withdrawals = () => {
                             <div className="flex gap-2">
                               <button
                                 onClick={() =>
-                                  handleOpenCommentModal(withdrawal, "approve")
+                                  handleDirectApprove(withdrawal.withdrawalId)
                                 }
                                 disabled={
                                   processingId === withdrawal.withdrawalId
