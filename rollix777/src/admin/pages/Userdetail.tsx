@@ -26,10 +26,12 @@ import {
   banWithdrawal,
   getAllTransactions,
   getBetHistoryByGameType,
+  setWageringPercentage,
 } from "../../lib/services/userService";
 import { updateBonusBalance } from "../../lib/services/userService";
 import { useParams, useNavigate } from "react-router-dom";
 import { getGameNameById, gameExists } from "../../lib/utils/gameLookup";
+import toast from "react-hot-toast";
 
 interface WalletBalance {
   id: number;
@@ -104,6 +106,7 @@ const Userdetail = () => {
   const [activeBetTab, setActiveBetTab] = useState("Wingo");
   const [betHistories, setBetHistories] = useState<any[]>([]);
   const [activeTimer, setActiveTimer] = useState(1);
+  const [wagering, setWagering] = useState("");
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -301,7 +304,33 @@ const Userdetail = () => {
     );
   }
 
-  console.log(betHistories, "transactions");
+  // console.log(betHistories, "transactions");
+
+  const handleSetWagering = async () => {
+    if (!wagering || wagering.trim() === "") {
+      toast.info("Please enter wagering value.");
+      return;
+    }
+    // Convert to number and validate
+    const percentageValue = parseFloat(wagering);
+
+    if (
+      isNaN(percentageValue) ||
+      percentageValue < 0 ||
+      percentageValue > 100
+    ) {
+      toast.error("Please enter a valid percentage between 0 and 100.");
+      return;
+    }
+    try {
+      const data = await setWageringPercentage(userId, percentageValue);
+      toast.success("Wagering value set successfully!");
+      setWagering("");
+    } catch (error) {
+      console.error("Error setting wagering:", error);
+      toast.error(error?.message || "Something went wrong. Please try again.");
+    }
+  };
 
   if (!userData) {
     return (
@@ -520,6 +549,29 @@ const Userdetail = () => {
                     <option value="no">No</option>
                     <option value="yes">Yes</option>
                   </select>
+                </div>
+              </div>
+              {/* Set Wagering */}
+              <div className="mt-8">
+                <label className="block text-gray-400 text-sm mb-2">
+                  Set Wagering (%)
+                </label>
+
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    placeholder="Enter Wagering %"
+                    className="flex-1 p-2 bg-[#1A1A2E] border border-purple-500/20 rounded-lg text-white focus:outline-none"
+                    value={wagering || ""}
+                    onChange={(e) => setWagering(e.target.value)}
+                  />
+
+                  <button
+                    onClick={handleSetWagering}
+                    className="px-3 py-1 text-sm text-purple-400 border border-purple-400 rounded-md hover:bg-purple-500/10 hover:text-purple-300 transition"
+                  >
+                    Set
+                  </button>
                 </div>
               </div>
             </div>
@@ -1285,12 +1337,18 @@ const Userdetail = () => {
                                 <td className="py-2">
                                   <div className="flex flex-col">
                                     <div className="flex items-center gap-2">
-                                      <Gamepad2 className={`w-4 h-4 ${gameExists(txn.gameId) ? 'text-purple-400' : 'text-gray-500'}`} />
-                                      <span 
+                                      <Gamepad2
+                                        className={`w-4 h-4 ${
+                                          gameExists(txn.gameId)
+                                            ? "text-purple-400"
+                                            : "text-gray-500"
+                                        }`}
+                                      />
+                                      <span
                                         className={`font-medium truncate max-w-[200px] ${
-                                          gameExists(txn.gameId) 
-                                            ? 'text-purple-400' 
-                                            : 'text-gray-500'
+                                          gameExists(txn.gameId)
+                                            ? "text-purple-400"
+                                            : "text-gray-500"
                                         }`}
                                         title={getGameNameById(txn.gameId)}
                                       >
