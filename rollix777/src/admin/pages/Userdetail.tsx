@@ -456,7 +456,7 @@ const Userdetail = () => {
                           Available Balance
                         </p>
                         <span className="text-white font-semibold text-lg">
-                          {wallet.balance || "0"}
+                          {Number(wallet.balance).toFixed(2) || "0"}
                         </span>
                       </div>
 
@@ -1121,21 +1121,23 @@ const Userdetail = () => {
                 </div>
 
                 {/* Timer Buttons */}
-                <div className="flex space-x-2">
-                  {[1, 3, 5, 10].map((min) => (
-                    <button
-                      key={min}
-                      onClick={() => setActiveTimer(min)}
-                      className={`px-3 py-1 text-xs md:text-sm rounded-lg border ${
-                        activeTimer === min
-                          ? "bg-purple-500/20 text-purple-400 border-purple-500"
-                          : "text-gray-400 border-purple-500/20 hover:text-purple-300"
-                      }`}
-                    >
-                      {min} min
-                    </button>
-                  ))}
-                </div>
+                {activeBetTab !== "Other" && (
+                  <div className="flex space-x-2">
+                    {[1, 3, 5, 10].map((min) => (
+                      <button
+                        key={min}
+                        onClick={() => setActiveTimer(min)}
+                        className={`px-3 py-1 text-xs md:text-sm rounded-lg border ${
+                          activeTimer === min
+                            ? "bg-purple-500/20 text-purple-400 border-purple-500"
+                            : "text-gray-400 border-purple-500/20 hover:text-purple-300"
+                        }`}
+                      >
+                        {min} min
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Tab Content */}
