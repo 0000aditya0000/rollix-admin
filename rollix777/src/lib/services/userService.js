@@ -370,6 +370,56 @@ export const setWageringPercentage = async (userId, percentage) => {
   }
 };
 
+// --- Add Bank Account ---
+export const addBankAccount = async (data) => {
+  try {
+    const response = await fetch(`${baseUrl}/api/admin/addnew`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `HTTP error! Status: ${response.status}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error adding bank account:", error.message);
+    throw error;
+  }
+};
+
+// --- Delete Bank Account ---
+export const deleteBankAccount = async (id) => {
+  try {
+    const response = await fetch(`${baseUrl}/api/admin/delete/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `HTTP error! Status: ${response.status}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error deleting bank account:", error.message);
+    throw error;
+  }
+};
+
 export const fetchUserData = async (userId) => fetchUser(userId);
 export const fetchUserAllData = async (userId) => fetchAllUserData(userId);
 export const updateUserData = async (userId, formData) =>

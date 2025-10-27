@@ -19,6 +19,7 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
   Gamepad2,
+  Trash,
 } from "lucide-react";
 import {
   fetchUserAllData,
@@ -27,6 +28,8 @@ import {
   getAllTransactions,
   getBetHistoryByGameType,
   setWageringPercentage,
+  addBankAccount,
+  deleteBankAccount,
 } from "../../lib/services/userService";
 import { updateBonusBalance } from "../../lib/services/userService";
 import { useParams, useNavigate } from "react-router-dom";
@@ -107,6 +110,16 @@ const Userdetail = () => {
   const [betHistories, setBetHistories] = useState<any[]>([]);
   const [activeTimer, setActiveTimer] = useState(1);
   const [wagering, setWagering] = useState("");
+  const [showAddBankModal, setShowAddBankModal] = useState(false);
+  const [newBank, setNewBank] = useState({
+    accountHolder: "",
+    accountname: "",
+    accountnumber: "",
+    ifsccode: "",
+    branch: "",
+  });
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedType, setSelectedType] = useState<"bank" | "wallet">("bank");
 
   useEffect(() => {
     const fetchTransactions = async () => {
@@ -282,6 +295,89 @@ const Userdetail = () => {
     }));
   };
 
+  const handleAddBank = async () => {
+    try {
+      let payload;
+
+      if (selectedType === "bank") {
+        if (
+          !newBank.accountHolder ||
+          !newBank.accountname ||
+          !newBank.accountnumber ||
+          !newBank.ifsccode ||
+          !newBank.branch
+        ) {
+          toast.error("Please fill in all bank fields");
+          return;
+        }
+
+        payload = {
+          userId: Number(userId),
+          type: "bank",
+          ...newBank,
+        };
+      } else {
+        if (!newBank.accountHolder || !newBank.usdt || !newBank.network) {
+          toast.error("Please fill in all wallet fields");
+          return;
+        }
+
+        payload = {
+          userId: Number(userId),
+          accountHolder: newBank.accountHolder,
+          type: "usdt",
+          usdt: newBank.usdt,
+          network: newBank.network,
+        };
+      }
+
+      const response = await addBankAccount(payload);
+      if (response) {
+        toast.success(
+          selectedType === "bank"
+            ? "Bank account added successfully!"
+            : "Wallet added successfully!"
+        );
+        setShowAddBankModal(false);
+        setNewBank({
+          accountHolder: "",
+          accountname: "",
+          accountnumber: "",
+          ifsccode: "",
+          branch: "",
+          usdt: "",
+          network: "",
+        });
+        const refreshed = await fetchUserAllData(userId);
+        if (refreshed.success) setUserData(refreshed.data);
+      } else {
+        toast.error(response.message || "Failed to add account");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error adding account");
+    }
+  };
+
+  const handleDeleteAccount = async (accountId: number) => {
+    if (!window.confirm("Are you sure you want to delete this account?"))
+      return;
+
+    try {
+      const response = await deleteBankAccount(accountId);
+      if (response) {
+        toast.success("Account deleted successfully!");
+        const refreshed = await fetchUserAllData(userId);
+        if (refreshed.success) setUserData(refreshed.data);
+      } else {
+        toast.error(response.message || "Failed to delete account");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error deleting account");
+    }
+  };
+
   if (loading) {
     return (
       <div className="w-full h-[80vh] flex items-center justify-center">
@@ -347,6 +443,7 @@ const Userdetail = () => {
     );
   }
 
+  console.log(userData, "users");
   return (
     <div className="w-full md:px-4 py-4 space-y-2 md:space-y-6">
       {/* Back Navigation Button */}
@@ -730,11 +827,66 @@ const Userdetail = () => {
                 Bank Accounts
               </h2>
             </div>
-            {expandedSections.bankAccounts ? (
-              <ChevronUp className="w-5 h-5 text-purple-400" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-purple-400" />
-            )}
+            <div
+              className="flex items-center gap-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Add Bank button */}
+              <div className="relative inline-block">
+                <button
+                  onClick={() => setShowDropdown((prev) => !prev)}
+                  className="px-3 py-1 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-500 transition"
+                >
+                  + Add Account
+                </button>
+
+                {showDropdown && (
+                  <div className="absolute right-0 mt-2 w-40 bg-[#1A1A2E] border border-purple-500/20 rounded-lg shadow-lg z-10">
+                    <button
+                      onClick={() => {
+                        setSelectedType("bank");
+                        setShowAddBankModal(true);
+                        setShowDropdown(false);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-purple-500/20"
+                    >
+                      Bank Account
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSelectedType("wallet");
+                        setShowAddBankModal(true);
+                        setShowDropdown(false);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-white hover:bg-purple-500/20"
+                    >
+                      USDT Wallet
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Remove button */}
+              {/* <button
+                onClick={() => handleRemoveBank(account.id)}
+                className="px-3 py-1 border border-red-400 text-red-400 rounded-lg text-sm hover:bg-red-500/10 transition"
+              >
+                Remove
+              </button> */}
+
+              {/* Chevron */}
+              {expandedSections.bankAccounts ? (
+                <ChevronUp
+                  className="w-5 h-5 text-purple-400"
+                  onClick={() => toggleSection("bankAccounts")}
+                />
+              ) : (
+                <ChevronDown
+                  className="w-5 h-5 text-purple-400"
+                  onClick={() => toggleSection("bankAccounts")}
+                />
+              )}
+            </div>
           </div>
 
           {expandedSections.bankAccounts && (
@@ -761,6 +913,15 @@ const Userdetail = () => {
                                 : "Bank Account"}
                             </span>
                           </div>
+
+                          {/* 🗑️ Delete button */}
+                          <button
+                            onClick={() => handleDeleteAccount(account.id)}
+                            className="text-red-400 hover:text-red-500 transition"
+                            title="Delete Account"
+                          >
+                            <Trash className="w-4 h-4" />
+                          </button>
                         </div>
 
                         {/* Conditional Display */}
@@ -1391,6 +1552,106 @@ const Userdetail = () => {
           )}
         </div>
       </div>
+      {showAddBankModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-[#1A1A2E] border border-purple-500/20 rounded-2xl p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold text-white mb-4">
+              Add {selectedType === "wallet" ? "USDT Wallet" : "Bank Account"}
+            </h3>
+
+            <div className="space-y-3">
+              {/* Common field for both */}
+              <input
+                type="text"
+                placeholder="Account Holder Name"
+                className="w-full p-2 rounded bg-gray-800 text-white border border-purple-500/20"
+                value={newBank.accountHolder}
+                onChange={(e) =>
+                  setNewBank({ ...newBank, accountHolder: e.target.value })
+                }
+              />
+
+              {selectedType === "bank" ? (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Bank Name"
+                    className="w-full p-2 rounded bg-gray-800 text-white border border-purple-500/20"
+                    value={newBank.accountname}
+                    onChange={(e) =>
+                      setNewBank({ ...newBank, accountname: e.target.value })
+                    }
+                  />
+                  <input
+                    type="text"
+                    placeholder="Account Number"
+                    className="w-full p-2 rounded bg-gray-800 text-white border border-purple-500/20"
+                    value={newBank.accountnumber}
+                    onChange={(e) =>
+                      setNewBank({ ...newBank, accountnumber: e.target.value })
+                    }
+                  />
+                  <input
+                    type="text"
+                    placeholder="IFSC Code"
+                    className="w-full p-2 rounded bg-gray-800 text-white border border-purple-500/20"
+                    value={newBank.ifsccode}
+                    onChange={(e) =>
+                      setNewBank({ ...newBank, ifsccode: e.target.value })
+                    }
+                  />
+                  <input
+                    type="text"
+                    placeholder="Branch"
+                    className="w-full p-2 rounded bg-gray-800 text-white border border-purple-500/20"
+                    value={newBank.branch}
+                    onChange={(e) =>
+                      setNewBank({ ...newBank, branch: e.target.value })
+                    }
+                  />
+                </>
+              ) : (
+                <>
+                  <input
+                    type="text"
+                    placeholder="USDT Address"
+                    className="w-full p-2 rounded bg-gray-800 text-white border border-purple-500/20"
+                    value={newBank.usdt}
+                    onChange={(e) =>
+                      setNewBank({ ...newBank, usdt: e.target.value })
+                    }
+                  />
+                  <input
+                    type="text"
+                    placeholder="Network (e.g. TRC20)"
+                    className="w-full p-2 rounded bg-gray-800 text-white border border-purple-500/20"
+                    value={newBank.network}
+                    onChange={(e) =>
+                      setNewBank({ ...newBank, network: e.target.value })
+                    }
+                  />
+                </>
+              )}
+            </div>
+
+            {/* Buttons */}
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowAddBankModal(false)}
+                className="px-4 py-2 text-gray-400 hover:text-white border border-gray-600 rounded-md"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddBank}
+                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-500"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
