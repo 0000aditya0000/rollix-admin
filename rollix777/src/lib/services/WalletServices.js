@@ -9,7 +9,7 @@ export const fetchUserWallets = async (userId) => {
     console.error("Error fetching wallet data:", error);
     throw error;
   }
-}; 
+};
 export const fetchWalletSummary = async () => {
   try {
     const res = await axios.get(`${baseUrl}/api/wallet/summary`);
@@ -26,6 +26,16 @@ export const fetchTodayBetStats = async () => {
     return res.data;
   } catch (err) {
     console.error("Error fetching today bet stats:", err);
+    throw err;
+  }
+};
+
+export const fetchOnlineGameCount = async () => {
+  try {
+    const res = await axios.get(`${baseUrl}/api/games/online-count`);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching online game count:", err);
     throw err;
   }
 };

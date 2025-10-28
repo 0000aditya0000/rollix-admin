@@ -8,6 +8,7 @@ import {
   Loader2,
   CreditCard,
   User,
+  ActivitySquare,
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
@@ -17,6 +18,7 @@ import { getAllRecharges } from "../../lib/services/rechargeService";
 import {
   fetchWalletSummary,
   fetchTodayBetStats,
+  fetchOnlineGameCount,
 } from "../../lib/services/WalletServices";
 
 // ===== Utility Helpers =====
@@ -75,6 +77,7 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<"recharge" | "withdrawals">(
     "recharge"
   );
+  const [onlineUsers, setOnlineUsers] = useState<number>(0);
 
   // ===== Fetch Data =====
   useEffect(() => {
@@ -128,6 +131,25 @@ const Dashboard = () => {
     };
 
     fetchAll();
+  }, []);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    const fetchOnlineUsers = async () => {
+      try {
+        const res = await fetchOnlineGameCount();
+
+        setOnlineUsers(res?.count || res?.onlineCount || 0);
+      } catch (err) {
+        console.error("Error fetching online users:", err);
+      }
+    };
+
+    fetchOnlineUsers();
+    interval = setInterval(fetchOnlineUsers, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   console.log(withdrawals, "withdrawals");
@@ -248,6 +270,12 @@ const Dashboard = () => {
           color="bg-red-600/30"
         />
 
+        <StatCard
+          title="Real-time Active User"
+          value={formatNumber(onlineUsers)}
+          icon={ActivitySquare}
+          color="bg-red-600/30"
+        />
         {/* Bet Stats */}
         {/* <StatCard
           title="Today's Bet"
